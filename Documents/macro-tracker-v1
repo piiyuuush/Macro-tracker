@@ -1,0 +1,31 @@
+Diet macro tracker
+
+it is a offline flutter based macro tracker which simply trackers your daily food macros
+
+it will not provide guidance or inforamation at all,it is rather just a calorie and nutritions tracker app.
+
+it will solely work by user input, and visualise the user's input.
+
+on the onboarding, it'll ask few questions to set user info and goals, and give the user a prompt to get their macro goals, that they could paste into any external LLM model of their of their liking. and the prompt will be such that, the ai model will return an output which we could extract the info from, so user will paste the ai's output into our app. so we can apply the goals into our app. OR rather they could skip the llm prompt and set it manually.
+
+The app should have the following
+
+dashboard, food, calendar and profile
+
+on dashboard, it should show
+
+mainly 3 to 4 macros, in a ring chart, like carbs, protein, fiber and calories.
+
+current week from start day to end day, like if monday is first it should show till sunday, all the macros percent of the day should be averaged out as overall percent and that would be the overall percent of that day. e.g. today is tuesday then the week should be as monday =78% tuesday = (today's overall) and rest are greyed out for now. if I click on monday entire dashboard should show monday's dashboard.
+
+few recent logs of recently ate food
+
+finally a floating plus icon which opens a modal to add a new food entry.
+
+on food, it should list out all my food items that I've added, category wise, and also an option to bucket few food items as a meal like "eating rice with curry" so rice and curry are grouped but can be entered as individual food items as well. so less redundancy in the system.
+
+same floating plus icons which let's us add new food item, also incase user doesnt know the macro value he can put the name and measuring method like countable like egg or measureable like rice in grams. then once enough user inputs are gathered it should create a prompt for external llm and same way user pastes the llm output into our box and from which extract info for the food like calories carbs protein.
+
+on calender, consider it the extended version of the "week bar" where entire month is show and the same overall percent till today. and below it should be the ring of macros of the selected date and below it should be the entire food log of that day.
+
+finally profile where user could update their details like goals weight, unit, and so on.
