@@ -1,3 +1,5 @@
+import 'providers/data_providers.dart';
+import 'screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/dashboard_screen.dart';
@@ -13,18 +15,30 @@ void main() {
   );
 }
 
-class MacroTrackerApp extends StatelessWidget {
+
+class MacroTrackerApp extends ConsumerWidget {
   const MacroTrackerApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProfileProvider);
+
     return MaterialApp(
       title: 'Macro Tracker',
       theme: ThemeData(
         primarySwatch: Colors.green,
         useMaterial3: true,
       ),
-      home: const MainNavigator(),
+      home: userAsync.when(
+        data: (user) {
+          if (user == null) {
+            return const OnboardingScreen();
+          }
+          return const MainNavigator();
+        },
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
+      ),
     );
   }
 }

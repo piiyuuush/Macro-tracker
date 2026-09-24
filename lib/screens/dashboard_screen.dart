@@ -11,25 +11,29 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final todayLogsAsync = ref.watch(todayLogsProvider);
+    final macroGoalsAsync = ref.watch(macroGoalsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
-      body: todayLogsAsync.when(
-        data: (logs) {
-          double totalCal = 0;
-          double totalProtein = 0;
-          double totalCarbs = 0;
-          double totalFat = 0;
+      body: macroGoalsAsync.when(
+        data: (goals) {
+          if (goals == null) return const Center(child: Text('No goals set'));
+          
+          return todayLogsAsync.when(
+            data: (logs) {
+              double totalCal = 0;
+              double totalProtein = 0;
+              double totalCarbs = 0;
+              double totalFat = 0;
 
-          for (var log in logs) {
-            totalCal += log.calories;
-            totalProtein += log.protein;
-            totalCarbs += log.carbs;
-            totalFat += log.fat;
-          }
+              for (var log in logs) {
+                totalCal += log.calories;
+                totalProtein += log.protein;
+                totalCarbs += log.carbs;
+                totalFat += log.fat;
+              }
 
-          // Hardcoded goals for now
-          const goalCal = 2000.0;
+              final goalCal = goals.caloriesTarget.toDouble();
           
           return SingleChildScrollView(
             child: Column(
@@ -80,9 +84,9 @@ class DashboardScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildMacroStat('Protein', totalProtein, 150, Colors.blue),
-                      _buildMacroStat('Carbs', totalCarbs, 200, Colors.yellow[700]!),
-                      _buildMacroStat('Fat', totalFat, 65, Colors.orange),
+                      _buildMacroStat('Protein', totalProtein, goals.proteinTarget, Colors.blue),
+                      _buildMacroStat('Carbs', totalCarbs, goals.carbsTarget, Colors.yellow[700]!),
+                      _buildMacroStat('Fat', totalFat, goals.fatTarget, Colors.orange),
                     ],
                   ),
                 ),
@@ -99,6 +103,10 @@ class DashboardScreen extends ConsumerWidget {
                 )).toList(),
               ],
             ),
+          );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
