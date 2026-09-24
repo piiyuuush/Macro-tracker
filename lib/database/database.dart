@@ -61,7 +61,20 @@ class FoodLogs extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Users, MacroGoals, FoodItems, FoodLogs])
+class Meals extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get userId => integer().references(Users, #id).nullable()();
+  TextColumn get name => text()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+class MealItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get mealId => integer().references(Meals, #id)();
+  IntColumn get foodItemId => integer().references(FoodItems, #id)();
+}
+
+@DriftDatabase(tables: [Users, MacroGoals, FoodItems, FoodLogs, Meals, MealItems])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
