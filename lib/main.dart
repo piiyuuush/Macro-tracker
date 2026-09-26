@@ -17,7 +17,7 @@ void main() {
 
 
 class MacroTrackerApp extends ConsumerWidget {
-  const MacroTrackerApp({Key? key}) : super(key: key);
+  const MacroTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,7 +44,7 @@ class MacroTrackerApp extends ConsumerWidget {
 }
 
 class MainNavigator extends StatefulWidget {
-  const MainNavigator({Key? key}) : super(key: key);
+  const MainNavigator({super.key});
 
   @override
   _MainNavigatorState createState() => _MainNavigatorState();

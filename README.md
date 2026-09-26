@@ -5,9 +5,10 @@ A privacy-first, offline Flutter-based macro tracking application that enables u
 ## 🚀 Features Implemented (v0.5)
 
 *   **100% Offline & Private:** Built with a local SQLite database (via `drift`). No cloud dependency, telemetry, or tracking.
-*   **AI-Assisted Macro Logging:** 
-    *   Generates optimized prompts for you to copy-paste into ChatGPT, Gemini, or Claude.
-    *   Features a built-in **Magic Extract** button that uses Regex to automatically parse the AI's response and instantly fill in the nutritional values (Calories, Protein, Carbs, Fat, Fiber).
+*   **AI-Assisted Food Logging:** 
+    *   Generates optimized prompts for you to copy-paste into ChatGPT, Gemini, or Claude to get nutritional info for your custom foods.
+    *   Features a built-in **Magic Extract** button that uses Regex to automatically parse the AI's response and instantly fill in the nutritional values (Calories, Protein, Carbs, Fat, Fiber) in the Food Inventory.
+*   **Scientific Goal Calculation:** Automatically calculates your Basal Metabolic Rate (BMR) and Total Daily Energy Expenditure (TDEE) using the Mifflin-St Jeor equation during onboarding, complete with dynamic macro splits (Protein/Carbs/Fat) based on your weight goals. Validates all inputs to ensure realistic physiological bounds.
 *   **Multi-step Onboarding:** A clean, colorful, multi-step welcome flow to establish your body metrics and daily target goals on your first launch.
 *   **Visual Dashboard:** Dynamic, real-time macro ring charts (built with `fl_chart`) tracking your daily progress against your active goals.
 *   **Food Inventory (CRUD):** Easily build, manage, and delete a custom repository of the foods you eat.

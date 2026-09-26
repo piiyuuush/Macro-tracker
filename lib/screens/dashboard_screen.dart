@@ -56,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
                               radius: 20,
                             ),
                             PieChartSectionData(
-                              color: Colors.grey.withOpacity(0.2),
+                              color: Colors.grey.withValues(alpha: 0.2),
                               value: (goalCal - totalCal).clamp(0, goalCal),
                               title: '',
                               radius: 20,
@@ -100,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
                   title: Text('Food ID: ${log.foodItemId}'), // Would join with food item name in full implementation
                   subtitle: Text('${log.quantity}g · ${log.calories} kcal'),
                   trailing: Text('${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}'),
-                )).toList(),
+                )),
               ],
             ),
           );

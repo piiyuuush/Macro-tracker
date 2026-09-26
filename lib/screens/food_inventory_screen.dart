@@ -7,7 +7,7 @@ import '../database/database.dart';
 import '../providers/database_provider.dart';
 
 class FoodInventoryScreen extends ConsumerWidget {
-  const FoodInventoryScreen({Key? key}) : super(key: key);
+  const FoodInventoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

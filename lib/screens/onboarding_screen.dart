@@ -27,16 +27,62 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _goal = 'Maintenance';
   final _goalRateCtrl = TextEditingController(text: '0.0');
 
-  final _llmPasteCtrl = TextEditingController();
   final _calCtrl = TextEditingController();
   final _proteinCtrl = TextEditingController();
   final _carbsCtrl = TextEditingController();
   final _fatCtrl = TextEditingController();
   final _fiberCtrl = TextEditingController();
 
+  void _calculateMacros() {
+    final age = int.tryParse(_ageCtrl.text) ?? 25;
+    final weight = double.tryParse(_weightCtrl.text) ?? 70.0;
+    final height = double.tryParse(_heightCtrl.text) ?? 170.0;
+    final rate = double.tryParse(_goalRateCtrl.text) ?? 0.0;
+
+    // Mifflin-St Jeor Equation
+    double bmr = (10 * weight) + (6.25 * height) - (5 * age);
+    bmr += (_gender == 'M') ? 5 : -161;
+
+    double activityMultiplier = 1.2;
+    switch (_activityLevel) {
+      case 'Lightly Active': activityMultiplier = 1.375; break;
+      case 'Moderately Active': activityMultiplier = 1.55; break;
+      case 'Very Active': activityMultiplier = 1.725; break;
+      case 'Extremely Active': activityMultiplier = 1.9; break;
+    }
+
+    double tdee = bmr * activityMultiplier;
+    
+    // 1 kg of weight = ~7700 kcal. Daily deficit/surplus = rate * 7700 / 7 = rate * 1100
+    double dailyAdjustment = rate * 1100;
+    
+    double targetCals = tdee;
+    if (_goal == 'Weight Loss') targetCals -= dailyAdjustment;
+    if (_goal == 'Weight Gain') targetCals += dailyAdjustment;
+
+    // Ensure calories don't drop to dangerously low levels
+    if (targetCals < 1200) targetCals = 1200;
+
+    // Standard Macro Split: 30% Protein, 40% Carbs, 30% Fat
+    double protein = (targetCals * 0.3) / 4.0;
+    double carbs = (targetCals * 0.4) / 4.0;
+    double fat = (targetCals * 0.3) / 9.0;
+    double fiber = (targetCals / 1000.0) * 14.0;
+
+    _calCtrl.text = targetCals.round().toString();
+    _proteinCtrl.text = protein.round().toString();
+    _carbsCtrl.text = carbs.round().toString();
+    _fatCtrl.text = fat.round().toString();
+    _fiberCtrl.text = fiber.round().toString();
+  }
+
   void _nextStep() {
     if (_currentStep == 1 && !_formKey1.currentState!.validate()) return;
-    if (_currentStep == 2 && !_formKey2.currentState!.validate()) return;
+    if (_currentStep == 2) {
+      if (!_formKey2.currentState!.validate()) return;
+      // Auto-calculate macros before moving to step 3
+      _calculateMacros();
+    }
     
     if (_currentStep < 3) {
       setState(() => _currentStep++);
@@ -49,52 +95,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
     }
-  }
-
-  void _showLLMPrompt() {
-    final prompt = "Based on a $_gender, ${_ageCtrl.text} years old, ${_heightCtrl.text}cm, ${_weightCtrl.text}kg, with $_activityLevel activity level, aiming for $_goal of ${_goalRateCtrl.text} per week, what should be the daily macro targets for:\n"
-                   "- Calories (kcal)\n"
-                   "- Protein (g)\n"
-                   "- Carbohydrates (g)\n"
-                   "- Fat (g)\n"
-                   "- Fiber (g)\n\n"
-                   "Return ONLY the response in this exact format:\n"
-                   "Calories: [NUMBER]\n"
-                   "Protein: [NUMBER]\n"
-                   "Carbs: [NUMBER]\n"
-                   "Fat: [NUMBER]\n"
-                   "Fiber: [NUMBER]";
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ask AI'),
-        content: SelectableText(prompt),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: prompt));
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Prompt copied! Paste it in ChatGPT or Gemini.')));
-              Navigator.pop(context);
-            },
-            child: const Text('Copy to Clipboard'),
-          ),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-        ],
-      )
-    );
-  }
-
-  void _extractMacros() {
-    final macros = LlmParser.parseMacros(_llmPasteCtrl.text);
-    setState(() {
-      _calCtrl.text = macros['calories']!.toInt().toString();
-      _proteinCtrl.text = macros['protein']!.toString();
-      _carbsCtrl.text = macros['carbs']!.toString();
-      _fatCtrl.text = macros['fat']!.toString();
-      _fiberCtrl.text = macros['fiber']!.toString();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Macros extracted!')));
   }
 
   void _saveOnboarding() async {
@@ -164,14 +164,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           TextFormField(
             controller: _nameCtrl, 
             decoration: _inputDeco('Your Name'), 
-            validator: (v) => v!.isEmpty ? 'Required' : null
+            validator: (v) => v == null || v.isEmpty ? 'Required' : null
           ),
           const SizedBox(height: 16),
           TextFormField(
             controller: _ageCtrl, 
             decoration: _inputDeco('Age'), 
             keyboardType: TextInputType.number,
-            validator: (v) => v!.isEmpty ? 'Required' : null
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required';
+              final age = int.tryParse(v);
+              if (age == null || age < 10 || age > 120) return 'Invalid age';
+              return null;
+            }
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -195,9 +200,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(child: TextFormField(controller: _heightCtrl, decoration: _inputDeco('Height (cm)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+              Expanded(
+                child: TextFormField(
+                  controller: _heightCtrl, 
+                  decoration: _inputDeco('Height (cm)'), 
+                  keyboardType: TextInputType.number, 
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Required';
+                    final h = double.tryParse(v);
+                    if (h == null || h < 50 || h > 250) return 'Invalid height';
+                    return null;
+                  }
+                )
+              ),
               const SizedBox(width: 16),
-              Expanded(child: TextFormField(controller: _weightCtrl, decoration: _inputDeco('Weight (kg)'), keyboardType: TextInputType.number, validator: (v) => v!.isEmpty ? 'Required' : null)),
+              Expanded(
+                child: TextFormField(
+                  controller: _weightCtrl, 
+                  decoration: _inputDeco('Weight (kg)'), 
+                  keyboardType: TextInputType.number, 
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Required';
+                    final w = double.tryParse(v);
+                    if (w == null || w < 20 || w > 300) return 'Invalid weight';
+                    final h = double.tryParse(_heightCtrl.text);
+                    if (h != null && h > 0) {
+                      final bmi = w / ((h / 100) * (h / 100));
+                      if (bmi < 10 || bmi > 70) return 'Physically impossible BMI';
+                    }
+                    return null;
+                  }
+                )
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -212,10 +246,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             value: _goal,
             decoration: _inputDeco('Goal'),
             items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: (v) => setState(() => _goal = v!),
+            onChanged: (v) {
+              setState(() {
+                _goal = v!;
+                if (_goal == 'Maintenance') {
+                  _goalRateCtrl.text = '0.0';
+                }
+              });
+            },
           ),
           const SizedBox(height: 16),
-          TextFormField(controller: _goalRateCtrl, decoration: _inputDeco('Target Rate (kg/week)'), keyboardType: TextInputType.number),
+          if (_goal != 'Maintenance')
+            TextFormField(
+              controller: _goalRateCtrl, 
+              decoration: _inputDeco('Target Rate (kg/week)'), 
+              keyboardType: TextInputType.number,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Required';
+                final rate = double.tryParse(v);
+                if (rate == null || rate <= 0 || rate > 1.5) {
+                  return 'Must be between 0.1 and 1.5 kg/week';
+                }
+                return null;
+              },
+            ),
         ],
       ),
     );
@@ -226,44 +280,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Macro Targets', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text('1. Generate and copy the prompt.\n2. Paste it into an AI (ChatGPT/Gemini).\n3. Paste the AI\'s exact response below.', style: TextStyle(fontSize: 13)),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: _showLLMPrompt, 
-                icon: const Icon(Icons.copy), 
-                label: const Text('Copy Prompt'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _llmPasteCtrl,
-                      decoration: _inputDeco('Paste AI output here...'),
-                      maxLines: 2,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.auto_fix_high, color: Colors.green),
-                    onPressed: _extractMacros,
-                    tooltip: 'Extract',
-                  )
-                ],
-              )
-            ],
-          ),
-        ),
+        const SizedBox(height: 8),
+        const Text('We calculated these targets using the Mifflin-St Jeor formula based on your metrics. You can manually adjust them below.', style: TextStyle(color: Colors.grey)),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -280,6 +298,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Expanded(child: TextField(controller: _fatCtrl, decoration: _inputDeco('Fat (g)'), keyboardType: TextInputType.number)),
           ],
         ),
+        const SizedBox(height: 12),
+        TextField(controller: _fiberCtrl, decoration: _inputDeco('Fiber (g)'), keyboardType: TextInputType.number),
       ],
     );
   }

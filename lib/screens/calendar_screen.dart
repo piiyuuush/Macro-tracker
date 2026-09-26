@@ -4,7 +4,7 @@ import '../providers/database_provider.dart';
 import '../database/database.dart';
 
 class CalendarScreen extends ConsumerWidget {
-  const CalendarScreen({Key? key}) : super(key: key);
+  const CalendarScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
