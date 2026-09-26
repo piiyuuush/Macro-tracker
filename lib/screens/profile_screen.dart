@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
+import 'package:drift/drift.dart' as drift;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../providers/data_providers.dart';
@@ -16,32 +20,122 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
-  void _exportCsv(BuildContext context) async {
+  Future<void> _exportData(BuildContext context) async {
     try {
       final db = ref.read(databaseProvider);
-      final logs = await db.select(db.foodLogs).get();
       
+      final users = await db.select(db.users).get();
+      final macroGoals = await db.select(db.macroGoals).get();
+      final foodItems = await db.select(db.foodItems).get();
+      final foodLogs = await db.select(db.foodLogs).get();
+      final meals = await db.select(db.meals).get();
+      final mealItems = await db.select(db.mealItems).get();
+      
+      final data = {
+        'users': users.map((u) => u.toJson()).toList(),
+        'macroGoals': macroGoals.map((m) => m.toJson()).toList(),
+        'foodItems': foodItems.map((f) => f.toJson()).toList(),
+        'foodLogs': foodLogs.map((l) => l.toJson()).toList(),
+        'meals': meals.map((m) => m.toJson()).toList(),
+        'mealItems': mealItems.map((mi) => mi.toJson()).toList(),
+      };
+      
+      final String jsonData = jsonEncode(data);
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/macro_tracker_export.csv');
+      final file = File('${directory.path}/macro_tracker_backup.json');
+      await file.writeAsString(jsonData);
       
-      String csvData = 'Date,Time,Quantity,Calories,Protein,Carbs,Fat,Fiber\n';
-      for (var log in logs) {
-        csvData += '${log.loggedDate.toIso8601String().split('T')[0]},';
-        csvData += '${log.loggedTime.toIso8601String().split('T')[1]},';
-        csvData += '${log.quantity},${log.calories},${log.protein},${log.carbs},${log.fat},${log.fiber}\n';
-      }
-      
-      await file.writeAsString(csvData);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Exported to ${file.path}', style: const TextStyle(color: Colors.white)), backgroundColor: Colors.green),
-        );
+        await Share.shareXFiles([XFile(file.path)], text: 'My Macro Tracker Backup');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error exporting: $e')));
+      }
+    }
+  }
+
+  Future<void> _importData(BuildContext context) async {
+    try {
+      final result = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      
+      if (result != null && result.path != null) {
+        final file = File(result.path!);
+        final String jsonData = await file.readAsString();
+        final Map<String, dynamic> data = jsonDecode(jsonData);
+        
+        final db = ref.read(databaseProvider);
+        
+        bool confirm = await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Restore Backup?'),
+            content: const Text('This will overwrite all your current data. This action cannot be undone.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () => Navigator.pop(ctx, true), 
+                child: const Text('Restore', style: TextStyle(color: Colors.white))
+              ),
+            ],
+          )
+        ) ?? false;
+        
+        if (!confirm) return;
+
+        await db.transaction(() async {
+          await db.delete(db.mealItems).go();
+          await db.delete(db.meals).go();
+          await db.delete(db.foodLogs).go();
+          await db.delete(db.foodItems).go();
+          await db.delete(db.macroGoals).go();
+          await db.delete(db.users).go();
+          
+          if (data['users'] != null) {
+            for (var u in data['users']) {
+              await db.into(db.users).insert(User.fromJson(u));
+            }
+          }
+          if (data['macroGoals'] != null) {
+            for (var m in data['macroGoals']) {
+              await db.into(db.macroGoals).insert(MacroGoal.fromJson(m));
+            }
+          }
+          if (data['foodItems'] != null) {
+            for (var f in data['foodItems']) {
+              await db.into(db.foodItems).insert(FoodItem.fromJson(f));
+            }
+          }
+          if (data['foodLogs'] != null) {
+            for (var l in data['foodLogs']) {
+              await db.into(db.foodLogs).insert(FoodLog.fromJson(l));
+            }
+          }
+          if (data['meals'] != null) {
+            for (var m in data['meals']) {
+              await db.into(db.meals).insert(Meal.fromJson(m));
+            }
+          }
+          if (data['mealItems'] != null) {
+            for (var mi in data['mealItems']) {
+              await db.into(db.mealItems).insert(MealItem.fromJson(mi));
+            }
+          }
+        });
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Backup restored successfully!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error importing: $e')));
       }
     }
   }
@@ -146,9 +240,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
                           child: Icon(Icons.download_rounded, color: Colors.green.shade700),
                         ),
-                        title: const Text('Export Data to CSV', style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text('Save a backup of your logs'),
-                        onTap: () => _exportCsv(context),
+                        title: const Text('Export Data', style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text('Save a full backup (JSON)'),
+                        onTap: () => _exportData(context),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade300)),
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: Colors.orange.shade50, shape: BoxShape.circle),
+                          child: Icon(Icons.upload_rounded, color: Colors.orange.shade700),
+                        ),
+                        title: const Text('Import Data', style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text('Restore from a backup'),
+                        onTap: () => _importData(context),
                       ),
                     ),
                   ],

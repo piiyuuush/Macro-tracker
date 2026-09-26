@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/data_providers.dart';
@@ -51,6 +52,7 @@ class DashboardScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _buildWeekBar(context, ref, goals),
                           Card(
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey.shade300)),
@@ -113,12 +115,19 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          const Text('Today\'s Food Logs', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Builder(
+                            builder: (context) {
+                              final selectedDate = ref.watch(selectedDateProvider);
+                              final isToday = selectedDate.year == DateTime.now().year && selectedDate.day == DateTime.now().day && selectedDate.month == DateTime.now().month;
+                              final title = isToday ? "Today's Food Logs" : "${DateFormat('EEEE').format(selectedDate)}'s Food Logs";
+                              return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+                            }
+                          ),
                           const SizedBox(height: 12),
                           if (logs.isEmpty) 
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(child: Text('No food logged today.', style: TextStyle(color: Colors.grey))),
+                              child: Center(child: Text('No food logged for this day.', style: TextStyle(color: Colors.grey))),
                             )
                           else
                             ...logs.map((log) {
@@ -355,8 +364,8 @@ class DashboardScreen extends ConsumerWidget {
                       await db.into(db.foodLogs).insert(FoodLogsCompanion.insert(
                         foodItemId: selectedFood!.id,
                         quantity: qty,
-                        loggedDate: DateTime(now.year, now.month, now.day),
-                        loggedTime: now,
+                        loggedDate: ref.read(selectedDateProvider),
+                        loggedTime: ref.read(selectedDateProvider).year == DateTime.now().year && ref.read(selectedDateProvider).day == DateTime.now().day ? DateTime.now() : ref.read(selectedDateProvider),
                         calories: selectedFood!.caloriesPerUnit * multiplier,
                         protein: selectedFood!.proteinPerUnit * multiplier,
                         carbs: selectedFood!.carbsPerUnit * multiplier,
@@ -375,6 +384,97 @@ class DashboardScreen extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+
+  
+  Widget _buildWeekBar(BuildContext context, WidgetRef ref, MacroGoal goals) {
+    final now = DateTime.now();
+    final int daysSinceMonday = now.weekday - 1;
+    final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysSinceMonday));
+    
+    final selectedDate = ref.watch(selectedDateProvider);
+    final weekLogsAsync = ref.watch(currentWeekLogsProvider);
+    
+    return weekLogsAsync.when(
+      data: (weekLogs) {
+        return Container(
+          height: 80,
+          margin: const EdgeInsets.only(bottom: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(7, (index) {
+              final date = monday.add(Duration(days: index));
+              final isSelected = date.year == selectedDate.year && date.month == selectedDate.month && date.day == selectedDate.day;
+              
+              // Calculate completion for this specific date
+              double totalCal = 0;
+              for (var log in weekLogs) {
+                if (log.loggedDate.year == date.year && log.loggedDate.month == date.month && log.loggedDate.day == date.day) {
+                  totalCal += log.calories;
+                }
+              }
+              
+              double completion = goals.caloriesTarget > 0 ? (totalCal / goals.caloriesTarget) : 0;
+              
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
+              final isFuture = date.isAfter(today);
+              
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: isFuture ? null : () {
+                  ref.read(selectedDateProvider.notifier).updateDate(date);
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      DateFormat('E').format(date).substring(0, 3),
+                      style: TextStyle(
+                        fontSize: 12, 
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade300 : Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isSelected ? Colors.green.withValues(alpha: 0.1) : Colors.transparent,
+                        border: date.year == today.year && date.month == today.month && date.day == today.day && !isSelected
+                            ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.5)
+                            : null,
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            value: completion,
+                            backgroundColor: isFuture ? Colors.grey.shade100 : Colors.grey.shade200,
+                            color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade300 : Colors.green.shade300),
+                            strokeWidth: 3,
+                          ),
+                          Text(
+                            date.day.toString(),
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade400 : Colors.black87),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        );
+      },
+      loading: () => const SizedBox(height: 80, child: Center(child: CircularProgressIndicator())),
+      error: (e, s) => const SizedBox(height: 80),
     );
   }
 
