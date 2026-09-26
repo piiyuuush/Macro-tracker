@@ -25,12 +25,14 @@ class DashboardScreen extends ConsumerWidget {
               double totalProtein = 0;
               double totalCarbs = 0;
               double totalFat = 0;
+              double totalFiber = 0;
 
               for (var log in logs) {
                 totalCal += log.calories;
                 totalProtein += log.protein;
                 totalCarbs += log.carbs;
                 totalFat += log.fat;
+                totalFiber += log.fiber;
               }
 
               final goalCal = goals.caloriesTarget.toDouble();
@@ -84,9 +86,10 @@ class DashboardScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildMacroStat('Protein', totalProtein, goals.proteinTarget, Colors.blue),
-                      _buildMacroStat('Carbs', totalCarbs, goals.carbsTarget, Colors.yellow[700]!),
-                      _buildMacroStat('Fat', totalFat, goals.fatTarget, Colors.orange),
+                      Expanded(child: _buildMacroStat('Protein', totalProtein, goals.proteinTarget, Colors.blue)),
+                      Expanded(child: _buildMacroStat('Carbs', totalCarbs, goals.carbsTarget, Colors.yellow[700]!)),
+                      Expanded(child: _buildMacroStat('Fat', totalFat, goals.fatTarget, Colors.orange)),
+                      Expanded(child: _buildMacroStat('Fiber', totalFiber, goals.fiberTarget, Colors.green)),
                     ],
                   ),
                 ),

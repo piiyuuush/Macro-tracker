@@ -73,19 +73,23 @@ class _MainNavigatorState extends State<MainNavigator> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.dashboard),
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard, color: Colors.green),
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.fastfood),
+            icon: Icon(Icons.fastfood_outlined),
+            selectedIcon: Icon(Icons.fastfood, color: Colors.green),
             label: 'Food',
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month),
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month, color: Colors.green),
             label: 'Calendar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: Colors.green),
             label: 'Profile',
           ),
         ],
