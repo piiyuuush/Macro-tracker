@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
 import '../utils/llm_parser.dart';
+import '../widgets/app_dropdown.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -184,10 +185,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             }
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _gender,
-            decoration: _inputDeco('Gender'),
-            items: ['M', 'F', 'Other'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          AppDropdown<String>(
+            value: _gender,
+            label: 'Gender',
+            prefixIcon: Icons.person_outline_rounded,
+            items: const [
+              AppDropdownItem(
+                  value: 'M', label: 'Male', icon: Icons.male_rounded),
+              AppDropdownItem(
+                  value: 'F', label: 'Female', icon: Icons.female_rounded),
+              AppDropdownItem(
+                  value: 'Other',
+                  label: 'Other',
+                  icon: Icons.transgender_rounded),
+            ],
             onChanged: (v) => setState(() => _gender = v!),
           ),
         ],
@@ -240,17 +251,69 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _activityLevel,
-            decoration: _inputDeco('Activity Level'),
-            items: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          AppDropdown<String>(
+            value: _activityLevel,
+            label: 'Activity Level',
+            prefixIcon: Icons.directions_run_rounded,
+            items: const [
+              AppDropdownItem(
+                value: 'Sedentary',
+                label: 'Sedentary',
+                subtitle: 'Little or no exercise',
+                icon: Icons.airline_seat_flat_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Lightly Active',
+                label: 'Lightly Active',
+                subtitle: 'Light exercise 1-3 days / week',
+                icon: Icons.directions_walk_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Moderately Active',
+                label: 'Moderately Active',
+                subtitle: 'Moderate exercise 3-5 days / week',
+                icon: Icons.directions_run_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Very Active',
+                label: 'Very Active',
+                subtitle: 'Hard exercise 6-7 days / week',
+                icon: Icons.fitness_center_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Extremely Active',
+                label: 'Extremely Active',
+                subtitle: 'Physical job + daily training',
+                icon: Icons.bolt_rounded,
+              ),
+            ],
             onChanged: (v) => setState(() => _activityLevel = v!),
           ),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _goal,
-            decoration: _inputDeco('Goal'),
-            items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          AppDropdown<String>(
+            value: _goal,
+            label: 'Goal',
+            prefixIcon: Icons.flag_outlined,
+            items: const [
+              AppDropdownItem(
+                value: 'Weight Loss',
+                label: 'Weight Loss',
+                subtitle: 'Calorie deficit',
+                icon: Icons.trending_down_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Maintenance',
+                label: 'Maintenance',
+                subtitle: 'Stay at current weight',
+                icon: Icons.balance_rounded,
+              ),
+              AppDropdownItem(
+                value: 'Weight Gain',
+                label: 'Weight Gain',
+                subtitle: 'Calorie surplus',
+                icon: Icons.trending_up_rounded,
+              ),
+            ],
             onChanged: (v) {
               setState(() {
                 _goal = v!;

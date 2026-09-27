@@ -6,7 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
-import 'package:drift/drift.dart' as drift;
+import '../widgets/app_dropdown.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -313,19 +313,26 @@ class DashboardScreen extends ConsumerWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      DropdownButtonFormField<FoodItem>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          labelText: 'Select Food',
-                          filled: true,
-                          fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        ),
-                        initialValue: selectedFood,
+                      AppDropdown<FoodItem>(
+                        value: selectedFood,
+                        label: 'Select Food',
+                        prefixIcon: Icons.restaurant_outlined,
                         items: foodItems.map((food) {
-                          return DropdownMenuItem(
+                          final isMeal = food.category != null &&
+                              food.category!.startsWith('Meal');
+                          final perLabel = food.servingType == 'count'
+                              ? 'per 1x'
+                              : (food.servingType == 'volume'
+                                  ? 'per 100ml'
+                                  : 'per 100g');
+                          return AppDropdownItem<FoodItem>(
                             value: food,
-                            child: Text(food.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                            label: food.name,
+                            subtitle:
+                                '${food.caloriesPerUnit.toInt()} kcal $perLabel',
+                            icon: isMeal
+                                ? Icons.restaurant_rounded
+                                : Icons.fastfood_rounded,
                           );
                         }).toList(),
                         onChanged: (val) {

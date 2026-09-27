@@ -45,6 +45,68 @@ class AppTheme {
         ),
         color: Colors.white,
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.green.shade700, width: 1.6),
+        ),
+        labelStyle: TextStyle(color: Colors.grey.shade700),
+        hintStyle: TextStyle(color: Colors.grey.shade500),
+        prefixIconColor: Colors.green.shade700,
+        suffixIconColor: Colors.green.shade700,
+      ),
+      menuTheme: MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: const WidgetStatePropertyAll(Colors.white),
+          elevation: const WidgetStatePropertyAll(8),
+          padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(vertical: 8, horizontal: 8)),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor: const WidgetStatePropertyAll(Colors.white),
+          elevation: const WidgetStatePropertyAll(8),
+          padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(vertical: 8)),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.green.shade700, width: 1.6),
+          ),
+        ),
+      ),
     );
   }
 
@@ -135,6 +197,30 @@ class AppTheme {
       ),
       dialogTheme: const DialogThemeData(backgroundColor: cardGrey),
       popupMenuTheme: const PopupMenuThemeData(color: cardGrey),
+      menuTheme: MenuThemeData(
+        style: MenuStyle(
+          backgroundColor:
+              const WidgetStatePropertyAll(Color(0xFF1A1A1A)),
+          elevation: const WidgetStatePropertyAll(8),
+          padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(vertical: 8, horizontal: 8)),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: MenuStyle(
+          backgroundColor:
+              const WidgetStatePropertyAll(Color(0xFF1A1A1A)),
+          elevation: const WidgetStatePropertyAll(8),
+          padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(vertical: 8)),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+      ),
       drawerTheme: const DrawerThemeData(backgroundColor: black),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: const Color(0xFF1A1A1A),

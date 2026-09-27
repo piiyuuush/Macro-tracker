@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/notifications_settings_modal.dart';
+import '../widgets/app_dropdown.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
@@ -598,10 +599,42 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                 ],
               ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _activityLevel,
-                decoration: _inputDeco(context, 'Activity Level'),
-                items: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              AppDropdown<String>(
+                value: _activityLevel,
+                label: 'Activity Level',
+                prefixIcon: Icons.directions_run_rounded,
+                items: const [
+                  AppDropdownItem(
+                    value: 'Sedentary',
+                    label: 'Sedentary',
+                    subtitle: 'Little or no exercise',
+                    icon: Icons.airline_seat_flat_rounded,
+                  ),
+                  AppDropdownItem(
+                    value: 'Lightly Active',
+                    label: 'Lightly Active',
+                    subtitle: 'Light exercise 1-3 days / week',
+                    icon: Icons.directions_walk_rounded,
+                  ),
+                  AppDropdownItem(
+                    value: 'Moderately Active',
+                    label: 'Moderately Active',
+                    subtitle: 'Moderate exercise 3-5 days / week',
+                    icon: Icons.directions_run_rounded,
+                  ),
+                  AppDropdownItem(
+                    value: 'Very Active',
+                    label: 'Very Active',
+                    subtitle: 'Hard exercise 6-7 days / week',
+                    icon: Icons.fitness_center_rounded,
+                  ),
+                  AppDropdownItem(
+                    value: 'Extremely Active',
+                    label: 'Extremely Active',
+                    subtitle: 'Physical job + daily training',
+                    icon: Icons.bolt_rounded,
+                  ),
+                ],
                 onChanged: (v) => setState(() => _activityLevel = v!),
               ),
               const SizedBox(height: 12),
@@ -609,10 +642,30 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _goal,
-                      decoration: _inputDeco(context, 'Goal'),
-                      items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    child: AppDropdown<String>(
+                      value: _goal,
+                      label: 'Goal',
+                      prefixIcon: Icons.flag_outlined,
+                      items: const [
+                        AppDropdownItem(
+                          value: 'Weight Loss',
+                          label: 'Weight Loss',
+                          subtitle: 'Deficit',
+                          icon: Icons.trending_down_rounded,
+                        ),
+                        AppDropdownItem(
+                          value: 'Maintenance',
+                          label: 'Maintenance',
+                          subtitle: 'Stay same',
+                          icon: Icons.balance_rounded,
+                        ),
+                        AppDropdownItem(
+                          value: 'Weight Gain',
+                          label: 'Weight Gain',
+                          subtitle: 'Surplus',
+                          icon: Icons.trending_up_rounded,
+                        ),
+                      ],
                       onChanged: (v) => setState(() => _goal = v!),
                     ),
                   ),

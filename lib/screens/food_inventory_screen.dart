@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../utils/llm_parser.dart';
+import '../widgets/app_dropdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/data_providers.dart';
 import '../database/database.dart';
@@ -445,41 +446,54 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: TextField(
-                              controller: nameController, 
-                              decoration: InputDecoration(
-                                labelText: 'Food Name',
-                                filled: true,
-                                fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              )
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Food Name',
+                          filled: true,
+                          fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade200,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 2,
-                            child: DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              initialValue: servingType,
-                              decoration: InputDecoration(
-                                labelText: 'Serving Type',
-                                filled: true,
-                                fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              ),
-                              items: ['Weight (e.g. 100g)', 'Count (e.g. 1x)', 'Volume (e.g. 100ml)'].map((e) => DropdownMenuItem(value: e, child: Text(e.split(' ')[0], style: const TextStyle(fontSize: 14)))).toList(),
-                              onChanged: (v) {
-                                if (v != null) setState(() => servingType = v);
-                              },
-                            ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Colors.green, width: 1.6),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        )
+                      ),
+                      const SizedBox(height: 12),
+                      AppDropdown<String>(
+                        value: servingType,
+                        label: 'Serving Type',
+                        prefixIcon: Icons.straighten_rounded,
+                        items: const [
+                          AppDropdownItem(
+                            value: 'Weight (e.g. 100g)',
+                            label: 'Weight',
+                            subtitle: 'Measured in grams · per 100g',
+                            icon: Icons.scale_rounded,
+                          ),
+                          AppDropdownItem(
+                            value: 'Count (e.g. 1x)',
+                            label: 'Count',
+                            subtitle: 'Pieces / units · per 1x',
+                            icon: Icons.tag_rounded,
+                          ),
+                          AppDropdownItem(
+                            value: 'Volume (e.g. 100ml)',
+                            label: 'Volume',
+                            subtitle: 'Milliliters · per 100ml',
+                            icon: Icons.water_drop_outlined,
                           ),
                         ],
+                        onChanged: (v) {
+                          if (v != null) setState(() => servingType = v);
+                        },
                       ),
                       const SizedBox(height: 16),
                       Container(
