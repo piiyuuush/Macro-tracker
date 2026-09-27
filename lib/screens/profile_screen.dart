@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/notifications_settings_modal.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
@@ -229,6 +230,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(height: 32),
                     
                     const Text('Data Management', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green)),
+                    const SizedBox(height: 12),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade300)),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: Colors.blue.shade50, shape: BoxShape.circle),
+                          child: Icon(Icons.notifications_active, color: Colors.blue.shade700),
+                        ),
+                        title: const Text('Meal Reminders', style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text('Set up notifications to log food'),
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (ctx) => const NotificationsSettingsModal(),
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Card(
                       elevation: 0,

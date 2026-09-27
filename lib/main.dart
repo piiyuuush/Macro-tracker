@@ -35,7 +35,7 @@ class MacroTrackerApp extends ConsumerWidget {
           scrolledUnderElevation: 0,
           centerTitle: false,
           iconTheme: IconThemeData(color: Colors.green.shade900),
-          titleTextStyle: TextStyle(color: Colors.green.shade900, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.5),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.5),
         ),
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: Colors.white,
