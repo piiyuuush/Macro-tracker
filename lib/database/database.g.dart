@@ -1222,12 +1222,12 @@ class $FoodItemsTable extends FoodItems
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _measurementTypeMeta = const VerificationMeta(
-    'measurementType',
+  static const VerificationMeta _servingTypeMeta = const VerificationMeta(
+    'servingType',
   );
   @override
-  late final GeneratedColumn<String> measurementType = GeneratedColumn<String>(
-    'measurement_type',
+  late final GeneratedColumn<String> servingType = GeneratedColumn<String>(
+    'serving_type',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -1316,7 +1316,7 @@ class $FoodItemsTable extends FoodItems
     userId,
     name,
     category,
-    measurementType,
+    servingType,
     measurementUnit,
     caloriesPerUnit,
     proteinPerUnit,
@@ -1360,16 +1360,16 @@ class $FoodItemsTable extends FoodItems
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
       );
     }
-    if (data.containsKey('measurement_type')) {
+    if (data.containsKey('serving_type')) {
       context.handle(
-        _measurementTypeMeta,
-        measurementType.isAcceptableOrUnknown(
-          data['measurement_type']!,
-          _measurementTypeMeta,
+        _servingTypeMeta,
+        servingType.isAcceptableOrUnknown(
+          data['serving_type']!,
+          _servingTypeMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_measurementTypeMeta);
+      context.missing(_servingTypeMeta);
     }
     if (data.containsKey('measurement_unit')) {
       context.handle(
@@ -1470,9 +1470,9 @@ class $FoodItemsTable extends FoodItems
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       ),
-      measurementType: attachedDatabase.typeMapping.read(
+      servingType: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}measurement_type'],
+        data['${effectivePrefix}serving_type'],
       )!,
       measurementUnit: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1516,7 +1516,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
   final int? userId;
   final String name;
   final String? category;
-  final String measurementType;
+  final String servingType;
   final String measurementUnit;
   final double caloriesPerUnit;
   final double proteinPerUnit;
@@ -1529,7 +1529,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
     this.userId,
     required this.name,
     this.category,
-    required this.measurementType,
+    required this.servingType,
     required this.measurementUnit,
     required this.caloriesPerUnit,
     required this.proteinPerUnit,
@@ -1549,7 +1549,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<String>(category);
     }
-    map['measurement_type'] = Variable<String>(measurementType);
+    map['serving_type'] = Variable<String>(servingType);
     map['measurement_unit'] = Variable<String>(measurementUnit);
     map['calories_per_unit'] = Variable<double>(caloriesPerUnit);
     map['protein_per_unit'] = Variable<double>(proteinPerUnit);
@@ -1570,7 +1570,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
-      measurementType: Value(measurementType),
+      servingType: Value(servingType),
       measurementUnit: Value(measurementUnit),
       caloriesPerUnit: Value(caloriesPerUnit),
       proteinPerUnit: Value(proteinPerUnit),
@@ -1591,7 +1591,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
       userId: serializer.fromJson<int?>(json['userId']),
       name: serializer.fromJson<String>(json['name']),
       category: serializer.fromJson<String?>(json['category']),
-      measurementType: serializer.fromJson<String>(json['measurementType']),
+      servingType: serializer.fromJson<String>(json['servingType']),
       measurementUnit: serializer.fromJson<String>(json['measurementUnit']),
       caloriesPerUnit: serializer.fromJson<double>(json['caloriesPerUnit']),
       proteinPerUnit: serializer.fromJson<double>(json['proteinPerUnit']),
@@ -1609,7 +1609,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
       'userId': serializer.toJson<int?>(userId),
       'name': serializer.toJson<String>(name),
       'category': serializer.toJson<String?>(category),
-      'measurementType': serializer.toJson<String>(measurementType),
+      'servingType': serializer.toJson<String>(servingType),
       'measurementUnit': serializer.toJson<String>(measurementUnit),
       'caloriesPerUnit': serializer.toJson<double>(caloriesPerUnit),
       'proteinPerUnit': serializer.toJson<double>(proteinPerUnit),
@@ -1625,7 +1625,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
     Value<int?> userId = const Value.absent(),
     String? name,
     Value<String?> category = const Value.absent(),
-    String? measurementType,
+    String? servingType,
     String? measurementUnit,
     double? caloriesPerUnit,
     double? proteinPerUnit,
@@ -1638,7 +1638,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
     userId: userId.present ? userId.value : this.userId,
     name: name ?? this.name,
     category: category.present ? category.value : this.category,
-    measurementType: measurementType ?? this.measurementType,
+    servingType: servingType ?? this.servingType,
     measurementUnit: measurementUnit ?? this.measurementUnit,
     caloriesPerUnit: caloriesPerUnit ?? this.caloriesPerUnit,
     proteinPerUnit: proteinPerUnit ?? this.proteinPerUnit,
@@ -1653,9 +1653,9 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
       userId: data.userId.present ? data.userId.value : this.userId,
       name: data.name.present ? data.name.value : this.name,
       category: data.category.present ? data.category.value : this.category,
-      measurementType: data.measurementType.present
-          ? data.measurementType.value
-          : this.measurementType,
+      servingType: data.servingType.present
+          ? data.servingType.value
+          : this.servingType,
       measurementUnit: data.measurementUnit.present
           ? data.measurementUnit.value
           : this.measurementUnit,
@@ -1685,7 +1685,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
           ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
-          ..write('measurementType: $measurementType, ')
+          ..write('servingType: $servingType, ')
           ..write('measurementUnit: $measurementUnit, ')
           ..write('caloriesPerUnit: $caloriesPerUnit, ')
           ..write('proteinPerUnit: $proteinPerUnit, ')
@@ -1703,7 +1703,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
     userId,
     name,
     category,
-    measurementType,
+    servingType,
     measurementUnit,
     caloriesPerUnit,
     proteinPerUnit,
@@ -1720,7 +1720,7 @@ class FoodItem extends DataClass implements Insertable<FoodItem> {
           other.userId == this.userId &&
           other.name == this.name &&
           other.category == this.category &&
-          other.measurementType == this.measurementType &&
+          other.servingType == this.servingType &&
           other.measurementUnit == this.measurementUnit &&
           other.caloriesPerUnit == this.caloriesPerUnit &&
           other.proteinPerUnit == this.proteinPerUnit &&
@@ -1735,7 +1735,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
   final Value<int?> userId;
   final Value<String> name;
   final Value<String?> category;
-  final Value<String> measurementType;
+  final Value<String> servingType;
   final Value<String> measurementUnit;
   final Value<double> caloriesPerUnit;
   final Value<double> proteinPerUnit;
@@ -1748,7 +1748,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     this.userId = const Value.absent(),
     this.name = const Value.absent(),
     this.category = const Value.absent(),
-    this.measurementType = const Value.absent(),
+    this.servingType = const Value.absent(),
     this.measurementUnit = const Value.absent(),
     this.caloriesPerUnit = const Value.absent(),
     this.proteinPerUnit = const Value.absent(),
@@ -1762,7 +1762,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     this.userId = const Value.absent(),
     required String name,
     this.category = const Value.absent(),
-    required String measurementType,
+    required String servingType,
     required String measurementUnit,
     required double caloriesPerUnit,
     required double proteinPerUnit,
@@ -1771,7 +1771,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     required double fiberPerUnit,
     required DateTime createdAt,
   }) : name = Value(name),
-       measurementType = Value(measurementType),
+       servingType = Value(servingType),
        measurementUnit = Value(measurementUnit),
        caloriesPerUnit = Value(caloriesPerUnit),
        proteinPerUnit = Value(proteinPerUnit),
@@ -1784,7 +1784,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     Expression<int>? userId,
     Expression<String>? name,
     Expression<String>? category,
-    Expression<String>? measurementType,
+    Expression<String>? servingType,
     Expression<String>? measurementUnit,
     Expression<double>? caloriesPerUnit,
     Expression<double>? proteinPerUnit,
@@ -1798,7 +1798,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
       if (userId != null) 'user_id': userId,
       if (name != null) 'name': name,
       if (category != null) 'category': category,
-      if (measurementType != null) 'measurement_type': measurementType,
+      if (servingType != null) 'serving_type': servingType,
       if (measurementUnit != null) 'measurement_unit': measurementUnit,
       if (caloriesPerUnit != null) 'calories_per_unit': caloriesPerUnit,
       if (proteinPerUnit != null) 'protein_per_unit': proteinPerUnit,
@@ -1814,7 +1814,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     Value<int?>? userId,
     Value<String>? name,
     Value<String?>? category,
-    Value<String>? measurementType,
+    Value<String>? servingType,
     Value<String>? measurementUnit,
     Value<double>? caloriesPerUnit,
     Value<double>? proteinPerUnit,
@@ -1828,7 +1828,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
       userId: userId ?? this.userId,
       name: name ?? this.name,
       category: category ?? this.category,
-      measurementType: measurementType ?? this.measurementType,
+      servingType: servingType ?? this.servingType,
       measurementUnit: measurementUnit ?? this.measurementUnit,
       caloriesPerUnit: caloriesPerUnit ?? this.caloriesPerUnit,
       proteinPerUnit: proteinPerUnit ?? this.proteinPerUnit,
@@ -1854,8 +1854,8 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
-    if (measurementType.present) {
-      map['measurement_type'] = Variable<String>(measurementType.value);
+    if (servingType.present) {
+      map['serving_type'] = Variable<String>(servingType.value);
     }
     if (measurementUnit.present) {
       map['measurement_unit'] = Variable<String>(measurementUnit.value);
@@ -1888,7 +1888,7 @@ class FoodItemsCompanion extends UpdateCompanion<FoodItem> {
           ..write('userId: $userId, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
-          ..write('measurementType: $measurementType, ')
+          ..write('servingType: $servingType, ')
           ..write('measurementUnit: $measurementUnit, ')
           ..write('caloriesPerUnit: $caloriesPerUnit, ')
           ..write('proteinPerUnit: $proteinPerUnit, ')
@@ -4242,7 +4242,7 @@ typedef $$FoodItemsTableCreateCompanionBuilder = FoodItemsCompanion Function({
   Value<int?> userId,
   required String name,
   Value<String?> category,
-  required String measurementType,
+  required String servingType,
   required String measurementUnit,
   required double caloriesPerUnit,
   required double proteinPerUnit,
@@ -4256,7 +4256,7 @@ typedef $$FoodItemsTableUpdateCompanionBuilder = FoodItemsCompanion Function({
   Value<int?> userId,
   Value<String> name,
   Value<String?> category,
-  Value<String> measurementType,
+  Value<String> servingType,
   Value<String> measurementUnit,
   Value<double> caloriesPerUnit,
   Value<double> proteinPerUnit,
@@ -4349,8 +4349,8 @@ class $$FoodItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get measurementType => $composableBuilder(
-    column: $table.measurementType,
+  ColumnFilters<String> get servingType => $composableBuilder(
+    column: $table.servingType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4487,8 +4487,8 @@ class $$FoodItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get measurementType => $composableBuilder(
-    column: $table.measurementType,
+  ColumnOrderings<String> get servingType => $composableBuilder(
+    column: $table.servingType,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4569,8 +4569,8 @@ class $$FoodItemsTableAnnotationComposer
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
-  GeneratedColumn<String> get measurementType => $composableBuilder(
-    column: $table.measurementType,
+  GeneratedColumn<String> get servingType => $composableBuilder(
+    column: $table.servingType,
     builder: (column) => column,
   );
 
@@ -4717,7 +4717,7 @@ class $$FoodItemsTableTableManager
                 Value<int?> userId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> category = const Value.absent(),
-                Value<String> measurementType = const Value.absent(),
+                Value<String> servingType = const Value.absent(),
                 Value<String> measurementUnit = const Value.absent(),
                 Value<double> caloriesPerUnit = const Value.absent(),
                 Value<double> proteinPerUnit = const Value.absent(),
@@ -4730,7 +4730,7 @@ class $$FoodItemsTableTableManager
                 userId: userId,
                 name: name,
                 category: category,
-                measurementType: measurementType,
+                servingType: servingType,
                 measurementUnit: measurementUnit,
                 caloriesPerUnit: caloriesPerUnit,
                 proteinPerUnit: proteinPerUnit,
@@ -4745,7 +4745,7 @@ class $$FoodItemsTableTableManager
                 Value<int?> userId = const Value.absent(),
                 required String name,
                 Value<String?> category = const Value.absent(),
-                required String measurementType,
+                required String servingType,
                 required String measurementUnit,
                 required double caloriesPerUnit,
                 required double proteinPerUnit,
@@ -4758,7 +4758,7 @@ class $$FoodItemsTableTableManager
                 userId: userId,
                 name: name,
                 category: category,
-                measurementType: measurementType,
+                servingType: servingType,
                 measurementUnit: measurementUnit,
                 caloriesPerUnit: caloriesPerUnit,
                 proteinPerUnit: proteinPerUnit,

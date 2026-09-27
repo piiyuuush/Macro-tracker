@@ -36,7 +36,7 @@ class FoodItems extends Table {
   IntColumn get userId => integer().references(Users, #id).nullable()();
   TextColumn get name => text()();
   TextColumn get category => text().nullable()();
-  TextColumn get measurementType => text()();
+  TextColumn get servingType => text()();
   TextColumn get measurementUnit => text()();
   RealColumn get caloriesPerUnit => real()();
   RealColumn get proteinPerUnit => real()();

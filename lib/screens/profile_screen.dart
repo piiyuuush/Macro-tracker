@@ -180,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(colors: [Colors.green.shade400, Colors.green.shade600]),
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+                        boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))],
                       ),
                       child: Column(
                         children: [
@@ -452,7 +452,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _activityLevel,
+                initialValue: _activityLevel,
                 decoration: _inputDeco('Activity Level'),
                 items: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (v) => setState(() => _activityLevel = v!),
@@ -463,7 +463,7 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                   Expanded(
                     flex: 2,
                     child: DropdownButtonFormField<String>(
-                      value: _goal,
+                      initialValue: _goal,
                       decoration: _inputDeco('Goal'),
                       items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                       onChanged: (v) => setState(() => _goal = v!),

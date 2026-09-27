@@ -26,8 +26,32 @@ class MacroTrackerApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Macro Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green.shade700, surface: Colors.grey.shade50),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.grey.shade50,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.grey.shade50,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: false,
+          iconTheme: IconThemeData(color: Colors.green.shade900),
+          titleTextStyle: TextStyle(color: Colors.green.shade900, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.5),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: Colors.green.shade100,
+          labelTextStyle: WidgetStateProperty.all(
+            TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green.shade900),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.green.shade100.withValues(alpha: 0.5), width: 1),
+          ),
+          color: Colors.white,
+        ),
       ),
       home: userAsync.when(
         data: (user) {
@@ -52,6 +76,19 @@ class MainNavigator extends StatefulWidget {
 
 class _MainNavigatorState extends State<MainNavigator> {
   int _currentIndex = 0;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   final List<Widget> _screens = [
     const DashboardScreen(),
@@ -63,13 +100,23 @@ class _MainNavigatorState extends State<MainNavigator> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
           setState(() {
             _currentIndex = index;
           });
+        },
+        children: _screens,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         },
         destinations: const [
           NavigationDestination(

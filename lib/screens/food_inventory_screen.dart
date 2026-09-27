@@ -132,7 +132,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                food.measurementType == 'measurable' ? 'per 100g' : 'per unit',
+                                food.servingType == 'weight' ? 'per 100g' : (food.servingType == 'volume' ? 'per 100ml' : 'per unit'),
                                 style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                               ),
                             ],
@@ -209,7 +209,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
       double totalCal = 0, totalP = 0, totalC = 0, totalF = 0, totalFiber = 0;
       for (var f in selectedFoods) {
         final qty = double.tryParse(quantityControllers[f.id]?.text ?? '0') ?? 0;
-        final multiplier = f.measurementType == 'measurable' ? (qty / 100.0) : qty;
+        final multiplier = (f.servingType == 'weight' || f.servingType == 'volume') ? (qty / 100.0) : qty;
         
         totalCal += f.caloriesPerUnit * multiplier;
         totalP += f.proteinPerUnit * multiplier;
@@ -227,7 +227,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
     // Initialize quantities and totals
     for (var f in selectedFoods) {
       if (!quantityControllers.containsKey(f.id)) {
-        quantityControllers[f.id] = TextEditingController(text: f.measurementType == 'measurable' ? '100' : '1');
+        quantityControllers[f.id] = TextEditingController(text: (f.servingType == 'weight' || f.servingType == 'volume') ? '100' : '1');
       }
     }
     if (mealToEdit == null) recalculateTotals();
@@ -278,7 +278,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                                   textAlign: TextAlign.center,
                                   decoration: InputDecoration(
                                     isDense: true,
-                                    suffixText: f.measurementType == 'measurable' ? 'g' : 'x',
+                                    suffixText: f.servingType == 'weight' ? 'g' : (f.servingType == 'volume' ? 'ml' : 'x'),
                                     filled: true,
                                     fillColor: Colors.grey.shade100,
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
@@ -335,7 +335,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                     
                     final companion = FoodItemsCompanion.insert(
                       name: groupNameController.text.trim(),
-                      measurementType: 'countable',
+                      servingType: 'count',
                       measurementUnit: 'serving',
                       caloriesPerUnit: double.tryParse(calController.text) ?? 0.0,
                       proteinPerUnit: double.tryParse(proteinController.text) ?? 0.0,
@@ -409,9 +409,11 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
     final fiberController = TextEditingController(text: foodToEdit != null ? foodToEdit.fiberPerUnit.toString() : '');
     final pasteController = TextEditingController();
     
-    String measurementType = foodToEdit != null && foodToEdit.measurementType == 'countable' 
-        ? 'Countable (e.g. 1 egg)' 
-        : 'Measurable (e.g. 100g)';
+    String servingType = 'Weight (e.g. 100g)';
+    if (foodToEdit != null) {
+      if (foodToEdit.servingType == 'count') servingType = 'Count (e.g. 1x)';
+      else if (foodToEdit.servingType == 'volume') servingType = 'Volume (e.g. 100ml)';
+    }
 
     pasteController.addListener(() {
       if (pasteController.text.isNotEmpty) {
@@ -462,17 +464,17 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                             flex: 2,
                             child: DropdownButtonFormField<String>(
                               isExpanded: true,
-                              value: measurementType,
+                              initialValue: servingType,
                               decoration: InputDecoration(
-                                labelText: 'Food Type',
+                                labelText: 'Serving Type',
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              items: ['Measurable (e.g. 100g)', 'Countable (e.g. 1 egg)'].map((e) => DropdownMenuItem(value: e, child: Text(e.split(' ')[0], style: const TextStyle(fontSize: 14)))).toList(),
+                              items: ['Weight (e.g. 100g)', 'Count (e.g. 1x)', 'Volume (e.g. 100ml)'].map((e) => DropdownMenuItem(value: e, child: Text(e.split(' ')[0], style: const TextStyle(fontSize: 14)))).toList(),
                               onChanged: (v) {
-                                if (v != null) setState(() => measurementType = v);
+                                if (v != null) setState(() => servingType = v);
                               },
                             ),
                           ),
@@ -503,9 +505,12 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                                   child: IconButton(
                                     onPressed: () {
                                       final foodName = nameController.text.isEmpty ? "this food" : nameController.text;
-                                      String instruction = measurementType.contains('Measurable') 
-                                          ? 'I need nutritional information for exactly 100g of $foodName.'
-                                          : 'I need nutritional information for exactly 1 average size unit/piece of $foodName.';
+                                      String instruction = 'I need nutritional information for exactly 100g of $foodName.';
+                                      if (servingType.contains('Count')) {
+                                          instruction = 'I need nutritional information for exactly 1 average size unit/piece of $foodName.';
+                                      } else if (servingType.contains('Volume')) {
+                                          instruction = 'I need nutritional information for exactly 100ml of $foodName.';
+                                      }
                                       
                                       final prompt = '$instruction\n'
                                                     'Return ONLY the response in this exact format:\n'
@@ -576,12 +581,20 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     final db = ref.read(databaseProvider);
-                    final isMeasurable = measurementType.contains('Measurable');
+                    String newServingType = 'weight';
+                    String newUnit = 'g';
+                    if (servingType.contains('Count')) {
+                      newServingType = 'count';
+                      newUnit = 'unit';
+                    } else if (servingType.contains('Volume')) {
+                      newServingType = 'volume';
+                      newUnit = 'ml';
+                    }
                     
                     final companion = FoodItemsCompanion.insert(
                       name: nameController.text,
-                      measurementType: isMeasurable ? 'measurable' : 'countable',
-                      measurementUnit: isMeasurable ? 'g' : 'unit',
+                      servingType: newServingType,
+                      measurementUnit: newUnit,
                       caloriesPerUnit: double.tryParse(calController.text) ?? 0.0,
                       proteinPerUnit: double.tryParse(proteinController.text) ?? 0.0,
                       carbsPerUnit: double.tryParse(carbsController.text) ?? 0.0,
@@ -595,7 +608,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                     } else {
                       await db.update(db.foodItems).replace(foodToEdit.copyWith(
                         name: companion.name.value,
-                        measurementType: companion.measurementType.value,
+                        servingType: companion.servingType.value,
                         measurementUnit: companion.measurementUnit.value,
                         caloriesPerUnit: companion.caloriesPerUnit.value,
                         proteinPerUnit: companion.proteinPerUnit.value,

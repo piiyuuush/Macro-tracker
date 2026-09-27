@@ -16,7 +16,7 @@ class DashboardScreen extends ConsumerWidget {
     final macroGoalsAsync = ref.watch(macroGoalsProvider);
     final todayLogsAsync = ref.watch(todayLogsProvider);
     final foodItemsAsync = ref.watch(foodItemsProvider);
-
+    
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -160,7 +160,7 @@ class DashboardScreen extends ConsumerWidget {
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              '${log.quantity.toInt()} ${food.measurementType == 'measurable' ? 'g' : 'unit(s)'} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
+                                              '${log.quantity.toInt()} ${food.servingType == 'weight' ? 'g' : (food.servingType == 'volume' ? 'ml' : 'x')} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
                                               style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                                             ),
                                           ],
@@ -239,7 +239,7 @@ class DashboardScreen extends ConsumerWidget {
               TextField(
                 controller: quantityController,
                 decoration: InputDecoration(
-                  labelText: food.measurementType == 'measurable' ? 'Quantity (g)' : 'Quantity (units)',
+                  labelText: food.servingType == 'weight' ? 'Quantity (g)' : (food.servingType == 'volume' ? 'Quantity (ml)' : 'Quantity (x)'),
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -267,7 +267,7 @@ class DashboardScreen extends ConsumerWidget {
                 final qty = double.tryParse(quantityController.text) ?? 0.0;
                 if (qty > 0) {
                   final db = ref.read(databaseProvider);
-                  final multiplier = food.measurementType == 'measurable' ? (qty / 100.0) : qty; 
+                  final multiplier = (food.servingType == 'weight' || food.servingType == 'volume') ? (qty / 100.0) : qty; 
                   
                   await db.update(db.foodLogs).replace(log.copyWith(
                     quantity: qty,
@@ -320,7 +320,7 @@ class DashboardScreen extends ConsumerWidget {
                           fillColor: Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
-                        value: selectedFood,
+                        initialValue: selectedFood,
                         items: foodItems.map((food) {
                           return DropdownMenuItem(
                             value: food,
@@ -337,7 +337,7 @@ class DashboardScreen extends ConsumerWidget {
                       TextField(
                         controller: quantityController,
                         decoration: InputDecoration(
-                          labelText: selectedFood != null && selectedFood!.measurementType == 'measurable' ? 'Quantity (g)' : 'Quantity (units)',
+                          labelText: selectedFood != null && selectedFood!.servingType == 'weight' ? 'Quantity (g)' : (selectedFood != null && selectedFood!.servingType == 'volume' ? 'Quantity (ml)' : 'Quantity (units)'),
                           filled: true,
                           fillColor: Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -359,7 +359,7 @@ class DashboardScreen extends ConsumerWidget {
                       final db = ref.read(databaseProvider);
                       final now = DateTime.now();
                       
-                      final multiplier = selectedFood!.measurementType == 'measurable' ? (qty / 100.0) : qty; 
+                      final multiplier = (selectedFood!.servingType == 'weight' || selectedFood!.servingType == 'volume') ? (qty / 100.0) : qty; 
 
                       await db.into(db.foodLogs).insert(FoodLogsCompanion.insert(
                         foodItemId: selectedFood!.id,
@@ -450,11 +450,15 @@ class DashboardScreen extends ConsumerWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          CircularProgressIndicator(
-                            value: completion,
-                            backgroundColor: isFuture ? Colors.grey.shade100 : Colors.grey.shade200,
-                            color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade300 : Colors.green.shade300),
-                            strokeWidth: 3,
+                          SizedBox(
+                            width: 36,
+                            height: 36,
+                            child: CircularProgressIndicator(
+                              value: completion,
+                              backgroundColor: isFuture ? Colors.transparent : Colors.green.shade50,
+                              color: isSelected ? Colors.white : (isFuture ? Colors.transparent : Colors.green),
+                              strokeWidth: 3,
+                            ),
                           ),
                           Text(
                             date.day.toString(),

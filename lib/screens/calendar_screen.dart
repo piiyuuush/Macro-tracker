@@ -5,8 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../providers/data_providers.dart';
 import '../database/database.dart';
-import '../providers/database_provider.dart';
-import 'package:drift/drift.dart' as drift;
 
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
@@ -133,7 +131,7 @@ class CalendarScreen extends ConsumerWidget {
                                                     ),
                                                     const SizedBox(height: 2),
                                                     Text(
-                                                      '${log.quantity.toInt()} ${food.measurementType == 'measurable' ? 'g' : 'unit(s)'} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
+                                                      '${log.quantity.toInt()} ${food.servingType == 'weight' ? 'g' : (food.servingType == 'volume' ? 'ml' : 'x')} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
                                                       style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -190,18 +188,26 @@ class CalendarScreen extends ConsumerWidget {
         alignment: Alignment.center,
         children: [
           if (hasData && !isSelected)
-            CircularProgressIndicator(
-              value: completion,
-              backgroundColor: Colors.grey.shade200,
-              color: Colors.green.shade400,
-              strokeWidth: 3,
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                value: completion,
+                backgroundColor: Colors.green.shade50,
+                color: Colors.green,
+                strokeWidth: 3,
+              ),
             ),
           if (hasData && isSelected)
-            CircularProgressIndicator(
-              value: completion,
-              backgroundColor: Colors.white.withValues(alpha: 0.3),
-              color: Colors.white,
-              strokeWidth: 3,
+            SizedBox(
+              width: 44,
+              height: 44,
+              child: CircularProgressIndicator(
+                value: completion,
+                backgroundColor: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white,
+                strokeWidth: 3,
+              ),
             ),
           Text(
             day.day.toString(),

@@ -6,7 +6,7 @@ import '../database/database.dart';
 import '../utils/llm_parser.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -180,7 +180,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _gender,
+            initialValue: _gender,
             decoration: _inputDeco('Gender'),
             items: ['M', 'F', 'Other'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (v) => setState(() => _gender = v!),
@@ -236,14 +236,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _activityLevel,
+            initialValue: _activityLevel,
             decoration: _inputDeco('Activity Level'),
             items: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (v) => setState(() => _activityLevel = v!),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _goal,
+            initialValue: _goal,
             decoration: _inputDeco('Goal'),
             items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (v) {
