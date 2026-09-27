@@ -438,8 +438,8 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isSelected ? Colors.green.withValues(alpha: 0.1) : Colors.transparent,
@@ -450,16 +450,15 @@ class DashboardScreen extends ConsumerWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: CircularProgressIndicator(
-                              value: completion,
-                              backgroundColor: isFuture ? Colors.transparent : Colors.green.shade50,
-                              color: isSelected ? Colors.white : (isFuture ? Colors.transparent : Colors.green),
-                              strokeWidth: 3,
+                          if (completion > 0)
+                            SizedBox.expand(
+                              child: CircularProgressIndicator(
+                                value: completion,
+                                backgroundColor: Colors.transparent,
+                                color: Colors.green,
+                                strokeWidth: 3,
+                              ),
                             ),
-                          ),
                           Text(
                             date.day.toString(),
                             style: TextStyle(

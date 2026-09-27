@@ -46,6 +46,7 @@ class CalendarScreen extends ConsumerWidget {
                         ref.read(selectedDateProvider.notifier).updateDate(selectedDay);
                       },
                       calendarFormat: CalendarFormat.month,
+                      rowHeight: 58,
                       headerStyle: const HeaderStyle(
                         formatButtonVisible: false,
                         titleCentered: true,
@@ -178,7 +179,9 @@ class CalendarScreen extends ConsumerWidget {
     bool hasData = totalCal > 0;
 
     return Container(
-      margin: const EdgeInsets.all(4),
+      width: 44,
+      height: 44,
+      margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isSelected ? Colors.green : (isToday ? Colors.green.withValues(alpha: 0.1) : Colors.transparent),
@@ -187,25 +190,12 @@ class CalendarScreen extends ConsumerWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (hasData && !isSelected)
-            SizedBox(
-              width: 44,
-              height: 44,
+          if (hasData)
+            SizedBox.expand(
               child: CircularProgressIndicator(
                 value: completion,
-                backgroundColor: Colors.green.shade50,
-                color: Colors.green,
-                strokeWidth: 3,
-              ),
-            ),
-          if (hasData && isSelected)
-            SizedBox(
-              width: 44,
-              height: 44,
-              child: CircularProgressIndicator(
-                value: completion,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                color: Colors.white,
+                backgroundColor: Colors.transparent,
+                color: isSelected ? Colors.white : Colors.green,
                 strokeWidth: 3,
               ),
             ),
