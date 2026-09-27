@@ -16,12 +16,13 @@ class DashboardScreen extends ConsumerWidget {
     final macroGoalsAsync = ref.watch(macroGoalsProvider);
     final todayLogsAsync = ref.watch(todayLogsProvider);
     final foodItemsAsync = ref.watch(foodItemsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
+        backgroundColor: isDark ? Colors.black : Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -55,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
                           _buildWeekBar(context, ref, goals),
                           Card(
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey.shade300)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Column(
@@ -77,7 +78,7 @@ class DashboardScreen extends ConsumerWidget {
                                                 radius: 20,
                                               ),
                                               PieChartSectionData(
-                                                color: Colors.grey.shade200,
+                                                color: isDark ? Colors.white12 : Colors.grey.shade200,
                                                 value: (goalCal - totalCal).clamp(0, goalCal),
                                                 title: '',
                                                 radius: 20,
@@ -104,10 +105,10 @@ class DashboardScreen extends ConsumerWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
-                                      Expanded(child: _buildMacroStat('Protein', totalProtein, goals.proteinTarget, Colors.blue)),
-                                      Expanded(child: _buildMacroStat('Carbs', totalCarbs, goals.carbsTarget, Colors.orange)),
-                                      Expanded(child: _buildMacroStat('Fat', totalFat, goals.fatTarget, Colors.redAccent)),
-                                      Expanded(child: _buildMacroStat('Fiber', totalFiber, goals.fiberTarget, Colors.green)),
+                                      Expanded(child: _buildMacroStat(context, 'Protein', totalProtein, goals.proteinTarget, Colors.blue)),
+                                      Expanded(child: _buildMacroStat(context, 'Carbs', totalCarbs, goals.carbsTarget, Colors.orange)),
+                                      Expanded(child: _buildMacroStat(context, 'Fat', totalFat, goals.fatTarget, Colors.redAccent)),
+                                      Expanded(child: _buildMacroStat(context, 'Fiber', totalFiber, goals.fiberTarget, Colors.green)),
                                     ],
                                   ),
                                 ],
@@ -137,15 +138,15 @@ class DashboardScreen extends ConsumerWidget {
                               return Card(
                                 elevation: 0,
                                 margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade300)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-                                        child: Icon(food.category != null && food.category!.startsWith('Meal') ? Icons.restaurant : Icons.fastfood, color: Colors.green.shade700, size: 24),
+                                        decoration: BoxDecoration(color: isDark ? Colors.green.withValues(alpha: 0.15) : Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
+                                        child: Icon(food.category != null && food.category!.startsWith('Meal') ? Icons.restaurant : Icons.fastfood, color: isDark ? Colors.green.shade400 : Colors.green.shade700, size: 24),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
@@ -156,12 +157,12 @@ class DashboardScreen extends ConsumerWidget {
                                             const SizedBox(height: 4),
                                             Text(
                                               '${log.calories.toInt()} kcal · ${log.protein.toInt()}g Protein',
-                                              style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                              style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontSize: 13),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               '${log.quantity.toInt()} ${food.servingType == 'weight' ? 'g' : (food.servingType == 'volume' ? 'ml' : 'x')} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
-                                              style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                              style: TextStyle(color: isDark ? Colors.green.shade400 : Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                                             ),
                                           ],
                                         ),
@@ -241,7 +242,7 @@ class DashboardScreen extends ConsumerWidget {
                 decoration: InputDecoration(
                   labelText: food.servingType == 'weight' ? 'Quantity (g)' : (food.servingType == 'volume' ? 'Quantity (ml)' : 'Quantity (x)'),
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
                 keyboardType: TextInputType.number,
@@ -317,7 +318,7 @@ class DashboardScreen extends ConsumerWidget {
                         decoration: InputDecoration(
                           labelText: 'Select Food',
                           filled: true,
-                          fillColor: Colors.grey.shade100,
+                          fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                         initialValue: selectedFood,
@@ -339,7 +340,7 @@ class DashboardScreen extends ConsumerWidget {
                         decoration: InputDecoration(
                           labelText: selectedFood != null && selectedFood!.servingType == 'weight' ? 'Quantity (g)' : (selectedFood != null && selectedFood!.servingType == 'volume' ? 'Quantity (ml)' : 'Quantity (units)'),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
+                          fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                         keyboardType: TextInputType.number,
@@ -392,6 +393,7 @@ class DashboardScreen extends ConsumerWidget {
     final now = DateTime.now();
     final int daysSinceMonday = now.weekday - 1;
     final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysSinceMonday));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final selectedDate = ref.watch(selectedDateProvider);
     final weekLogsAsync = ref.watch(currentWeekLogsProvider);
@@ -433,7 +435,7 @@ class DashboardScreen extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 12, 
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade300 : Colors.grey),
+                        color: isSelected ? Colors.green : (isFuture ? (isDark ? Colors.white24 : Colors.grey.shade300) : Colors.grey),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -463,7 +465,7 @@ class DashboardScreen extends ConsumerWidget {
                             date.day.toString(),
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? Colors.green : (isFuture ? Colors.grey.shade400 : Colors.black87),
+                              color: isSelected ? Colors.green : (isFuture ? (isDark ? Colors.white24 : Colors.grey.shade400) : (isDark ? Colors.white : Colors.black87)),
                             ),
                           ),
                         ],
@@ -481,8 +483,9 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMacroStat(String label, double current, double goal, Color color) {
+  Widget _buildMacroStat(BuildContext context, String label, double current, double goal, Color color) {
     final bool isCompleted = goal > 0 && current >= goal;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Column(
       children: [
@@ -499,7 +502,7 @@ class DashboardScreen extends ConsumerWidget {
                 height: 50,
                 child: CircularProgressIndicator(
                   value: goal > 0 ? (current / goal) : 0,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: isDark ? Colors.white12 : Colors.grey[200],
                   color: color,
                   strokeWidth: 5,
                 ),

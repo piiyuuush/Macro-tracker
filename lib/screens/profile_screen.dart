@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
+import '../providers/theme_provider.dart';
 import '../database/database.dart';
 import 'package:drift/drift.dart' as drift;
 
@@ -154,12 +155,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
     final goalsAsync = ref.watch(macroGoalsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Profile & Settings', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
+        backgroundColor: isDark ? Colors.black : Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -220,13 +222,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       childAspectRatio: 2.5,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        _buildMacroCard('Calories', '${goals.caloriesTarget} kcal', Icons.local_fire_department, Colors.orange),
-                        _buildMacroCard('Protein', '${goals.proteinTarget} g', Icons.fitness_center, Colors.blue),
-                        _buildMacroCard('Carbs', '${goals.carbsTarget} g', Icons.breakfast_dining, Colors.yellow.shade700),
-                        _buildMacroCard('Fat', '${goals.fatTarget} g', Icons.water_drop, Colors.red.shade400),
-                        _buildMacroCard('Fiber', '${goals.fiberTarget} g', Icons.grass, Colors.green.shade400),
+                        _buildMacroCard(context, 'Calories', '${goals.caloriesTarget} kcal', Icons.local_fire_department, Colors.orange),
+                        _buildMacroCard(context, 'Protein', '${goals.proteinTarget} g', Icons.fitness_center, Colors.blue),
+                        _buildMacroCard(context, 'Carbs', '${goals.carbsTarget} g', Icons.breakfast_dining, Colors.yellow.shade700),
+                        _buildMacroCard(context, 'Fat', '${goals.fatTarget} g', Icons.water_drop, Colors.red.shade400),
+                        _buildMacroCard(context, 'Fiber', '${goals.fiberTarget} g', Icons.grass, Colors.green.shade400),
                       ],
                     ),
+                    const SizedBox(height: 32),
+
+                    _buildAppearanceSection(context, ref),
                     const SizedBox(height: 32),
                     
                     const Text('Data Management', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green)),
@@ -298,12 +303,128 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildMacroCard(String label, String value, IconData icon, Color color) {
+  Widget _buildAppearanceSection(BuildContext context, WidgetRef ref) {
+    final themeAsync = ref.watch(themeModeProvider);
+    final notifier = ref.read(themeModeProvider.notifier);
+    final themeMode = themeAsync.value ?? ThemeMode.system;
+    final followSystem = themeMode == ThemeMode.system;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Appearance',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.green,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isDark ? Colors.white12 : Colors.grey.shade300,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  secondary: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.green.withValues(alpha: 0.15)
+                          : Colors.green.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.brightness_auto,
+                      color: isDark
+                          ? Colors.green.shade400
+                          : Colors.green.shade700,
+                    ),
+                  ),
+                  title: const Text(
+                    'Follow system theme',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    followSystem
+                        ? 'Currently: ${isDark ? 'AMOLED Black' : 'Light'} (system)'
+                        : 'Off — choose manually below',
+                  ),
+                  value: followSystem,
+                  onChanged: (v) => notifier.followSystem(v),
+                ),
+                if (!followSystem) ...[
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.palette_outlined, size: 20),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Theme',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        SegmentedButton<ThemeMode>(
+                          segments: const [
+                            ButtonSegment<ThemeMode>(
+                              value: ThemeMode.light,
+                              label: Text('Light'),
+                              icon: Icon(Icons.light_mode, size: 16),
+                            ),
+                            ButtonSegment<ThemeMode>(
+                              value: ThemeMode.dark,
+                              label: Text('AMOLED'),
+                              icon:
+                                  Icon(Icons.dark_mode, size: 16),
+                            ),
+                          ],
+                          selected: {
+                            themeMode == ThemeMode.dark
+                                ? ThemeMode.dark
+                                : ThemeMode.light
+                          },
+                          onSelectionChanged: (s) =>
+                              notifier.setTheme(s.first),
+                          showSelectedIcon: false,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacroCard(
+      BuildContext context, String label, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF111111) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 6, offset: const Offset(0, 3))],
+        border: isDark ? Border.all(color: Colors.white10) : null,
+        boxShadow: isDark
+            ? []
+            : [BoxShadow(color: Colors.grey.shade200, blurRadius: 6, offset: const Offset(0, 3))],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -434,11 +555,12 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
     if (mounted) Navigator.pop(context);
   }
 
-  InputDecoration _inputDeco(String label) {
+  InputDecoration _inputDeco(BuildContext context, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.grey.shade100,
+      fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     );
@@ -446,10 +568,11 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111111) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -467,17 +590,17 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
               
               Row(
                 children: [
-                  Expanded(child: TextFormField(controller: _weightCtrl, decoration: _inputDeco('Weight (kg)'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _weightCtrl, decoration: _inputDeco(context, 'Weight (kg)'), keyboardType: TextInputType.number)),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _heightCtrl, decoration: _inputDeco('Height (cm)'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _heightCtrl, decoration: _inputDeco(context, 'Height (cm)'), keyboardType: TextInputType.number)),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _ageCtrl, decoration: _inputDeco('Age'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _ageCtrl, decoration: _inputDeco(context, 'Age'), keyboardType: TextInputType.number)),
                 ],
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _activityLevel,
-                decoration: _inputDeco('Activity Level'),
+                decoration: _inputDeco(context, 'Activity Level'),
                 items: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active', 'Extremely Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                 onChanged: (v) => setState(() => _activityLevel = v!),
               ),
@@ -488,13 +611,13 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                     flex: 2,
                     child: DropdownButtonFormField<String>(
                       initialValue: _goal,
-                      decoration: _inputDeco('Goal'),
+                      decoration: _inputDeco(context, 'Goal'),
                       items: ['Weight Loss', 'Maintenance', 'Weight Gain'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                       onChanged: (v) => setState(() => _goal = v!),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _goalRateCtrl, decoration: _inputDeco('Rate/wk'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _goalRateCtrl, decoration: _inputDeco(context, 'Rate/wk'), keyboardType: TextInputType.number)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -509,17 +632,17 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: TextFormField(controller: _calCtrl, decoration: _inputDeco('Calories'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _calCtrl, decoration: _inputDeco(context, 'Calories'), keyboardType: TextInputType.number)),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _proteinCtrl, decoration: _inputDeco('Protein (g)'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _proteinCtrl, decoration: _inputDeco(context, 'Protein (g)'), keyboardType: TextInputType.number)),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: TextFormField(controller: _carbsCtrl, decoration: _inputDeco('Carbs (g)'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _carbsCtrl, decoration: _inputDeco(context, 'Carbs (g)'), keyboardType: TextInputType.number)),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _fatCtrl, decoration: _inputDeco('Fat (g)'), keyboardType: TextInputType.number)),
+                  Expanded(child: TextFormField(controller: _fatCtrl, decoration: _inputDeco(context, 'Fat (g)'), keyboardType: TextInputType.number)),
                 ],
               ),
               

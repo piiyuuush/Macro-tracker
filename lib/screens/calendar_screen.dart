@@ -15,12 +15,13 @@ class CalendarScreen extends ConsumerWidget {
     final allLogsAsync = ref.watch(allFoodLogsProvider);
     final macroGoalsAsync = ref.watch(macroGoalsProvider);
     final foodItemsAsync = ref.watch(foodItemsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Calendar', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
+        backgroundColor: isDark ? Colors.black : Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -36,7 +37,7 @@ class CalendarScreen extends ConsumerWidget {
               return Column(
                 children: [
                   Container(
-                    color: Colors.white,
+                    color: isDark ? Colors.black : Colors.white,
                     height: 430, // Fixed height to prevent layout shifts between 5-week and 6-week months
                     child: TableCalendar(
                       firstDay: DateTime.utc(2020, 1, 1),
@@ -48,9 +49,16 @@ class CalendarScreen extends ConsumerWidget {
                       },
                       calendarFormat: CalendarFormat.month,
                       rowHeight: 58,
-                      headerStyle: const HeaderStyle(
+                      headerStyle: HeaderStyle(
                         formatButtonVisible: false,
                         titleCentered: true,
+                        titleTextStyle: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 17, fontWeight: FontWeight.w600),
+                        leftChevronIcon: Icon(Icons.chevron_left, color: isDark ? Colors.white70 : Colors.black54),
+                        rightChevronIcon: Icon(Icons.chevron_right, color: isDark ? Colors.white70 : Colors.black54),
+                      ),
+                      daysOfWeekStyle: DaysOfWeekStyle(
+                        weekdayStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                        weekendStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
                       ),
                       calendarStyle: CalendarStyle(
                         selectedDecoration: const BoxDecoration(
@@ -62,16 +70,19 @@ class CalendarScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                         todayTextStyle: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                        defaultTextStyle: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        weekendTextStyle: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        outsideTextStyle: TextStyle(color: isDark ? Colors.white24 : Colors.grey),
                       ),
                       calendarBuilders: CalendarBuilders(
                         defaultBuilder: (context, day, focusedDay) {
-                          return _buildCalendarCell(day, selectedDate, allLogs, goalCal, isToday: isSameDay(day, DateTime.now()));
+                          return _buildCalendarCell(context, day, selectedDate, allLogs, goalCal, isToday: isSameDay(day, DateTime.now()));
                         },
                         todayBuilder: (context, day, focusedDay) {
-                          return _buildCalendarCell(day, selectedDate, allLogs, goalCal, isToday: true);
+                          return _buildCalendarCell(context, day, selectedDate, allLogs, goalCal, isToday: true);
                         },
                         selectedBuilder: (context, day, focusedDay) {
-                          return _buildCalendarCell(day, selectedDate, allLogs, goalCal, isSelected: true, isToday: isSameDay(day, DateTime.now()));
+                          return _buildCalendarCell(context, day, selectedDate, allLogs, goalCal, isSelected: true, isToday: isSameDay(day, DateTime.now()));
                         },
                       ),
                     ),
@@ -110,15 +121,15 @@ class CalendarScreen extends ConsumerWidget {
                                       return Card(
                                         elevation: 0,
                                         margin: const EdgeInsets.only(bottom: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade300)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
                                         child: Padding(
                                           padding: const EdgeInsets.all(16.0),
                                           child: Row(
                                             children: [
                                               Container(
                                                 padding: const EdgeInsets.all(12),
-                                                decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-                                                child: Icon(food.category != null && food.category!.startsWith('Meal') ? Icons.restaurant : Icons.fastfood, color: Colors.green.shade700, size: 24),
+                                                decoration: BoxDecoration(color: isDark ? Colors.green.withValues(alpha: 0.15) : Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
+                                                child: Icon(food.category != null && food.category!.startsWith('Meal') ? Icons.restaurant : Icons.fastfood, color: isDark ? Colors.green.shade400 : Colors.green.shade700, size: 24),
                                               ),
                                               const SizedBox(width: 16),
                                               Expanded(
@@ -129,12 +140,12 @@ class CalendarScreen extends ConsumerWidget {
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       '${log.calories.toInt()} kcal · ${log.protein.toInt()}g Protein',
-                                                      style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                                      style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontSize: 13),
                                                     ),
                                                     const SizedBox(height: 2),
                                                     Text(
                                                       '${log.quantity.toInt()} ${food.servingType == 'weight' ? 'g' : (food.servingType == 'volume' ? 'ml' : 'x')} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
-                                                      style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                                      style: TextStyle(color: isDark ? Colors.green.shade400 : Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
                                                 ),
@@ -167,7 +178,7 @@ class CalendarScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCalendarCell(DateTime day, DateTime selectedDate, List<FoodLog> allLogs, double goalCal, {bool isSelected = false, bool isToday = false}) {
+  Widget _buildCalendarCell(BuildContext context, DateTime day, DateTime selectedDate, List<FoodLog> allLogs, double goalCal, {bool isSelected = false, bool isToday = false}) {
     // Calculate total calories for this specific day
     double totalCal = 0;
     for (var log in allLogs) {
@@ -175,6 +186,7 @@ class CalendarScreen extends ConsumerWidget {
         totalCal += log.calories;
       }
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     double completion = goalCal > 0 ? (totalCal / goalCal) : 0;
     bool hasData = totalCal > 0;
@@ -204,7 +216,7 @@ class CalendarScreen extends ConsumerWidget {
             day.day.toString(),
             style: TextStyle(
               fontWeight: isSelected || isToday || hasData ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? Colors.white : (isToday ? Colors.green : Colors.black87),
+              color: isSelected ? Colors.white : (isToday ? Colors.green : (isDark ? Colors.white : Colors.black87)),
             ),
           ),
         ],

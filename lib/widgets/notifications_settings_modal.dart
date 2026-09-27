@@ -100,11 +100,12 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111111) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -117,7 +118,7 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
           children: [
             const Text('Meal Reminders', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green)),
             const SizedBox(height: 8),
-            const Text('How many times a day do you want to be reminded to log food?', style: TextStyle(color: Colors.black87)),
+            Text('How many times a day do you want to be reminded to log food?', style: TextStyle(color: isDark ? Colors.white70 : Colors.black87)),
             const SizedBox(height: 16),
             TextField(
               controller: _countController,
@@ -125,7 +126,7 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
               decoration: InputDecoration(
                 labelText: 'Number of Reminders (e.g., 3)',
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
               onChanged: _updateCount,
@@ -138,7 +139,7 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   elevation: 0,
-                  color: Colors.green.shade50,
+                  color: isDark ? Colors.green.withValues(alpha: 0.12) : Colors.green.shade50,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     leading: const Icon(Icons.access_time, color: Colors.green),

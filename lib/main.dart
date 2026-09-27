@@ -1,11 +1,14 @@
 import 'providers/data_providers.dart';
+import 'providers/theme_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/food_inventory_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/profile_screen.dart';
+import 'utils/app_theme.dart';
 
 void main() {
   runApp(
@@ -22,46 +25,41 @@ class MacroTrackerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userProfileProvider);
+    final themeAsync = ref.watch(themeModeProvider);
+    final themeMode = themeAsync.value ?? ThemeMode.system;
 
     return MaterialApp(
       title: 'Macro Tracker',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green.shade700, surface: Colors.grey.shade50),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.grey.shade50,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.grey.shade50,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          centerTitle: false,
-          iconTheme: IconThemeData(color: Colors.green.shade900),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: -0.5),
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: Colors.white,
-          indicatorColor: Colors.green.shade100,
-          labelTextStyle: WidgetStateProperty.all(
-            TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green.shade900),
-          ),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.green.shade100.withValues(alpha: 0.5), width: 1),
-          ),
-          color: Colors.white,
-        ),
-      ),
-      home: userAsync.when(
-        data: (user) {
-          if (user == null) {
-            return const OnboardingScreen();
-          }
-          return const MainNavigator();
-        },
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.amoledDarkTheme,
+      themeMode: themeMode,
+      home: themeAsync.isLoading
+          ? _ThemeSplash()
+          : userAsync.when(
+              data: (user) {
+                if (user == null) {
+                  return const OnboardingScreen();
+                }
+                return const MainNavigator();
+              },
+              loading: () => const Scaffold(
+                  body: Center(child: CircularProgressIndicator())),
+              error: (err, stack) =>
+                  Scaffold(body: Center(child: Text('Error: $err'))),
+            ),
+    );
+  }
+}
+
+class _ThemeSplash extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark =
+        MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.grey.shade50,
+      body: const Center(
+        child: CircularProgressIndicator(color: Colors.green),
       ),
     );
   }
@@ -109,37 +107,49 @@ class _MainNavigatorState extends State<MainNavigator> {
         },
         children: _screens,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          _pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: Colors.green),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.fastfood_outlined),
-            selectedIcon: Icon(Icons.fastfood, color: Colors.green),
-            label: 'Food',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month, color: Colors.green),
-            label: 'Calendar',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: Colors.green),
-            label: 'Profile',
-          ),
-        ],
+      bottomNavigationBar: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light.copyWith(
+                statusBarColor: Colors.black,
+                systemNavigationBarColor: Colors.black,
+                systemNavigationBarIconBrightness: Brightness.light,
+              )
+            : SystemUiOverlayStyle.dark.copyWith(
+                systemNavigationBarColor: Colors.white,
+                systemNavigationBarIconBrightness: Brightness.dark,
+              ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            _pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard, color: Colors.green),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.fastfood_outlined),
+              selectedIcon: Icon(Icons.fastfood, color: Colors.green),
+              label: 'Food',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_month_outlined),
+              selectedIcon: Icon(Icons.calendar_month, color: Colors.green),
+              label: 'Calendar',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person, color: Colors.green),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

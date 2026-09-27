@@ -22,12 +22,13 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final foodItemsAsyncValue = ref.watch(foodItemsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(isSelectionMode ? '${selectedFoodIds.length} Selected' : 'Food Inventory', style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
+        backgroundColor: isDark ? Colors.black : Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: isSelectionMode ? [
@@ -90,7 +91,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16), 
-                    side: BorderSide(color: isSelected ? Colors.green : Colors.grey.shade300, width: isSelected ? 2 : 1)
+                    side: BorderSide(color: isSelected ? Colors.green : (isDark ? Colors.white10 : Colors.grey.shade300), width: isSelected ? 2 : 1)
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -116,8 +117,8 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                           ),
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-                          child: Icon((food.category?.startsWith('Meal') ?? false) ? Icons.restaurant : Icons.fastfood, color: Colors.green.shade700, size: 24),
+                          decoration: BoxDecoration(color: isDark ? Colors.green.withValues(alpha: 0.15) : Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
+                          child: Icon((food.category?.startsWith('Meal') ?? false) ? Icons.restaurant : Icons.fastfood, color: isDark ? Colors.green.shade400 : Colors.green.shade700, size: 24),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -128,12 +129,12 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 '${food.caloriesPerUnit.toInt()} kcal · ${food.proteinPerUnit.toInt()}g Protein',
-                                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontSize: 13),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 food.servingType == 'weight' ? 'per 100g' : (food.servingType == 'volume' ? 'per 100ml' : 'per unit'),
-                                style: TextStyle(color: Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                                style: TextStyle(color: isDark ? Colors.green.shade400 : Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -254,7 +255,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                         decoration: InputDecoration(
                           labelText: 'Meal Name',
                           filled: true,
-                          fillColor: Colors.grey.shade100,
+                          fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
@@ -280,7 +281,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                                     isDense: true,
                                     suffixText: f.servingType == 'weight' ? 'g' : (f.servingType == 'volume' ? 'ml' : 'x'),
                                     filled: true,
-                                    fillColor: Colors.grey.shade100,
+                                    fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                                   ),
                                   onChanged: (_) {
@@ -453,7 +454,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Food Name',
                                 filled: true,
-                                fillColor: Colors.grey.shade100,
+                                fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               )
@@ -468,7 +469,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Serving Type',
                                 filled: true,
-                                fillColor: Colors.grey.shade100,
+                                fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
@@ -483,7 +484,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.shade100)),
+                        decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.dark ? Colors.green.withValues(alpha: 0.12) : Colors.green.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.green.shade100)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -534,7 +535,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                                       hintText: 'Paste AI output...', 
                                       hintStyle: const TextStyle(fontSize: 13),
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                       suffixIcon: pasteController.text.isNotEmpty ? IconButton(
@@ -637,7 +638,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
         labelText: label,
         labelStyle: const TextStyle(fontSize: 13),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ), 

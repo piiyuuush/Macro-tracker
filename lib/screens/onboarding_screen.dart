@@ -125,6 +125,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildStep0() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -134,16 +135,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.shade200)),
-          child: const Row(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.orange.withValues(alpha: 0.12) : Colors.orange.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? Colors.white10 : Colors.orange.shade200),
+          ),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange),
-              SizedBox(width: 12),
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Disclaimer: Our app is purely a tracking and data visualization tool, not a medical or dietary advisor. Always consult a professional for dietary guidance.',
-                  style: TextStyle(color: Colors.black87),
+                  style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
                 ),
               ),
             ],
@@ -276,12 +281,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildStep3() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Macro Targets', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
         const SizedBox(height: 8),
-        const Text('We calculated these targets using the Mifflin-St Jeor formula based on your metrics. You can manually adjust them below.', style: TextStyle(color: Colors.grey)),
+        Text('We calculated these targets using the Mifflin-St Jeor formula based on your metrics. You can manually adjust them below.', style: TextStyle(color: isDark ? Colors.white60 : Colors.grey)),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -305,11 +311,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   InputDecoration _inputDeco(String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InputDecoration(
       labelText: label,
       filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      fillColor: isDark ? const Color(0xFF111111) : Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: isDark ? const BorderSide(color: Colors.white10) : BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: isDark ? const BorderSide(color: Colors.white10) : BorderSide.none,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
@@ -317,9 +331,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> steps = [_buildStep0(), _buildStep1(), _buildStep2(), _buildStep3()];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -342,7 +357,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   if (_currentStep > 0)
                     TextButton(
                       onPressed: _prevStep,
-                      child: const Text('Back', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      child: Text('Back', style: TextStyle(color: isDark ? Colors.white70 : Colors.grey, fontSize: 16)),
                     )
                   else
                     const SizedBox.shrink(),
@@ -350,8 +365,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ElevatedButton(
                     onPressed: _nextStep,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+                      backgroundColor: isDark ? Colors.green.shade400 : Colors.green,
+                      foregroundColor: isDark ? Colors.black : Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
