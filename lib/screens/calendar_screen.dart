@@ -37,6 +37,7 @@ class CalendarScreen extends ConsumerWidget {
                 children: [
                   Container(
                     color: Colors.white,
+                    height: 430, // Fixed height to prevent layout shifts between 5-week and 6-week months
                     child: TableCalendar(
                       firstDay: DateTime.utc(2020, 1, 1),
                       lastDay: DateTime.utc(2030, 12, 31),
