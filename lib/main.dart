@@ -65,21 +65,21 @@ class _ThemeSplash extends StatelessWidget {
   }
 }
 
-class MainNavigator extends StatefulWidget {
+class MainNavigator extends ConsumerStatefulWidget {
   const MainNavigator({super.key});
 
   @override
-  _MainNavigatorState createState() => _MainNavigatorState();
+  ConsumerState<MainNavigator> createState() => _MainNavigatorState();
 }
 
-class _MainNavigatorState extends State<MainNavigator> {
-  int _currentIndex = 0;
+class _MainNavigatorState extends ConsumerState<MainNavigator> {
+  
   late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
+    _pageController = PageController(initialPage: ref.read(mainNavigationProvider));
   }
 
   @override
@@ -97,13 +97,26 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(mainNavigationProvider);
+    
+    ref.listen<int>(mainNavigationProvider, (previous, next) {
+      if (previous != next && _pageController.page?.round() != next) {
+        _pageController.animateToPage(
+          next,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+
     return Scaffold(
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          // Also update the provider silently so they stay in sync
+          if (ref.read(mainNavigationProvider) != index) {
+            Future.microtask(() => ref.read(mainNavigationProvider.notifier).setIndex(index));
+          }
         },
         children: _screens,
       ),
@@ -119,13 +132,9 @@ class _MainNavigatorState extends State<MainNavigator> {
                 systemNavigationBarIconBrightness: Brightness.dark,
               ),
         child: NavigationBar(
-          selectedIndex: _currentIndex,
+          selectedIndex: currentIndex,
           onDestinationSelected: (index) {
-            _pageController.animateToPage(
-              index,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
+            ref.read(mainNavigationProvider.notifier).setIndex(index);
           },
           destinations: const [
             NavigationDestination(

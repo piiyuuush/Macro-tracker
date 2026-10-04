@@ -67,3 +67,14 @@ final allFoodLogsProvider = StreamProvider<List<FoodLog>>((ref) {
   final db = ref.watch(databaseProvider);
   return db.select(db.foodLogs).watch();
 });
+
+class MainNavigationNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void setIndex(int index) {
+    state = index;
+  }
+}
+
+final mainNavigationProvider = NotifierProvider<MainNavigationNotifier, int>(MainNavigationNotifier.new);

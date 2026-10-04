@@ -358,36 +358,54 @@ class DashboardScreen extends ConsumerWidget {
                 loading: () => const CircularProgressIndicator(color: Colors.green),
                 error: (e, s) => Text('Error: $e'),
               ),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
-                ElevatedButton(
-                  onPressed: () async {
-                    final qty = double.tryParse(quantityController.text) ?? 1.0;
-                    if (selectedFood != null && qty > 0) {
-                      final db = ref.read(databaseProvider);
-                      final now = DateTime.now();
-                      
-                      final multiplier = (selectedFood!.servingType == 'weight' || selectedFood!.servingType == 'volume') ? (qty / 100.0) : qty; 
+              actions: foodItemsAsync.maybeWhen(
+                data: (foodItems) {
+                  if (foodItems.isEmpty) {
+                    return [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          ref.read(mainNavigationProvider.notifier).setIndex(1); // 1 is Food Inventory
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                        child: const Text('Okay'),
+                      ),
+                    ];
+                  }
+                  return [
+                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final qty = double.tryParse(quantityController.text) ?? 1.0;
+                        if (selectedFood != null && qty > 0) {
+                          final db = ref.read(databaseProvider);
+                          final now = DateTime.now();
+                          
+                          final multiplier = (selectedFood!.servingType == 'weight' || selectedFood!.servingType == 'volume') ? (qty / 100.0) : qty; 
 
-                      await db.into(db.foodLogs).insert(FoodLogsCompanion.insert(
-                        foodItemId: selectedFood!.id,
-                        quantity: qty,
-                        loggedDate: ref.read(selectedDateProvider),
-                        loggedTime: ref.read(selectedDateProvider).year == DateTime.now().year && ref.read(selectedDateProvider).day == DateTime.now().day ? DateTime.now() : ref.read(selectedDateProvider),
-                        calories: selectedFood!.caloriesPerUnit * multiplier,
-                        protein: selectedFood!.proteinPerUnit * multiplier,
-                        carbs: selectedFood!.carbsPerUnit * multiplier,
-                        fat: selectedFood!.fatPerUnit * multiplier,
-                        fiber: selectedFood!.fiberPerUnit * multiplier,
-                        createdAt: now,
-                      ));
-                      if (context.mounted) Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                  child: const Text('Save'),
-                ),
-              ],
+                          await db.into(db.foodLogs).insert(FoodLogsCompanion.insert(
+                            foodItemId: selectedFood!.id,
+                            quantity: qty,
+                            loggedDate: ref.read(selectedDateProvider),
+                            loggedTime: ref.read(selectedDateProvider).year == DateTime.now().year && ref.read(selectedDateProvider).day == DateTime.now().day ? DateTime.now() : ref.read(selectedDateProvider),
+                            calories: selectedFood!.caloriesPerUnit * multiplier,
+                            protein: selectedFood!.proteinPerUnit * multiplier,
+                            carbs: selectedFood!.carbsPerUnit * multiplier,
+                            fat: selectedFood!.fatPerUnit * multiplier,
+                            fiber: selectedFood!.fiberPerUnit * multiplier,
+                            createdAt: now,
+                          ));
+                          if (context.mounted) Navigator.pop(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                      child: const Text('Save'),
+                    ),
+                  ];
+                },
+                orElse: () => [],
+              ),
             );
           },
         );
