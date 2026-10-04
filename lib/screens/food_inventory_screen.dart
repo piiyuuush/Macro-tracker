@@ -6,6 +6,8 @@ import '../widgets/app_dropdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/data_providers.dart';
 import '../database/database.dart';
+import '../utils/backup_service.dart';
+import 'package:dotted_border/dotted_border.dart';
 import '../providers/database_provider.dart';
 import 'package:drift/drift.dart' as drift;
 
@@ -57,7 +59,41 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
       body: foodItemsAsyncValue.when(
         data: (foodItems) {
           if (foodItems.isEmpty) {
-            return const Center(child: Text('No food items found.', style: TextStyle(color: Colors.grey, fontSize: 16)));
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('No food items found.', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () => BackupService.importData(context, ref),
+                    child: DottedBorder(
+                      options: const RoundedRectDottedBorderOptions(
+                        color: Colors.green,
+                        strokeWidth: 2,
+                        dashPattern: [8, 4],
+                        radius: Radius.circular(16),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.download, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Import Food Backup', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
