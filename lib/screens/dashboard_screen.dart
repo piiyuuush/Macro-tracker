@@ -309,90 +309,124 @@ class DashboardScreen extends ConsumerWidget {
                       itemCount: components.length + 1,
                       itemBuilder: (context, index) {
                         if (index == components.length) {
-                          return TextButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                components.add({'food': null, 'controller': TextEditingController()});
-                              });
-                            },
-                            icon: const Icon(Icons.add, color: Colors.green),
-                            label: const Text('Add Item', style: TextStyle(color: Colors.green)),
+                          return Container(
+                            margin: const EdgeInsets.only(top: 4, bottom: 8),
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  components.add({'food': null, 'controller': TextEditingController()});
+                                });
+                              },
+                              icon: const Icon(Icons.add, color: Colors.green),
+                              label: const Text('Add Another Item', style: TextStyle(color: Colors.green)),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                side: BorderSide(color: Colors.green.withValues(alpha: 0.5), width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
                           );
                         }
                         
                         final comp = components[index];
                         final food = comp['food'] as FoodItem?;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Row(
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                flex: 2,
-                                child: AppDropdown<FoodItem>(
-                                  value: food,
-                                  label: 'Select Food',
-                                  prefixIcon: Icons.restaurant_outlined,
-                                  items: selectableFoods.map((f) {
-                                    final isMeal = f.category != null && f.category!.startsWith('Meal');
-                                    return AppDropdownItem<FoodItem>(
-                                      value: f,
-                                      label: f.name,
-                                      subtitle: '${f.caloriesPerUnit.toInt()} kcal',
-                                      icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    if (val != null && val.category != null && val.category!.startsWith('Meal')) {
-                                      setState(() {
-                                        components.removeAt(index);
-                                        final jsonStr = val.category!.replaceFirst('Meal:', '');
-                                        try {
-                                          final List<dynamic> decoded = jsonDecode(jsonStr);
-                                          int insertIdx = index;
-                                          for (var item in decoded) {
-                                            final subFood = foodItems.firstWhere((f) => f.id == item['id']);
-                                            components.insert(insertIdx, {
-                                              'food': subFood,
-                                              'controller': TextEditingController(text: item['qty'].toString())
-                                            });
-                                            insertIdx++;
-                                          }
-                                        } catch (_) {}
-                                        if (components.isEmpty) {
-                                          components.add({'food': null, 'controller': TextEditingController()});
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: AppDropdown<FoodItem>(
+                                      value: food,
+                                      label: 'Select Food',
+                                      prefixIcon: Icons.restaurant_outlined,
+                                      items: selectableFoods.map((f) {
+                                        final isMeal = f.category != null && f.category!.startsWith('Meal');
+                                        return AppDropdownItem<FoodItem>(
+                                          value: f,
+                                          label: f.name,
+                                          subtitle: '${f.caloriesPerUnit.toInt()} kcal',
+                                          icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null && val.category != null && val.category!.startsWith('Meal')) {
+                                          setState(() {
+                                            components.removeAt(index);
+                                            final jsonStr = val.category!.replaceFirst('Meal:', '');
+                                            try {
+                                              final List<dynamic> decoded = jsonDecode(jsonStr);
+                                              int insertIdx = index;
+                                              for (var item in decoded) {
+                                                final subFood = foodItems.firstWhere((f) => f.id == item['id']);
+                                                components.insert(insertIdx, {
+                                                  'food': subFood,
+                                                  'controller': TextEditingController(text: item['qty'].toString())
+                                                });
+                                                insertIdx++;
+                                              }
+                                            } catch (_) {}
+                                            if (components.isEmpty) {
+                                              components.add({'food': null, 'controller': TextEditingController()});
+                                            }
+                                          });
+                                        } else {
+                                          setState(() {
+                                            components[index]['food'] = val;
+                                          });
                                         }
-                                      });
-                                    } else {
-                                      setState(() {
-                                        components[index]['food'] = val;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                flex: 1,
-                                child: TextField(
-                                  controller: comp['controller'] as TextEditingController,
-                                  decoration: InputDecoration(
-                                    labelText: food != null && food.servingType == 'weight' ? '(g)' : (food != null && food.servingType == 'volume' ? '(ml)' : '(x)'),
-                                    filled: true,
-                                    fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                      },
+                                    ),
                                   ),
-                                  keyboardType: TextInputType.number,
-                                ),
+                                  if (components.length > 1)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.redAccent),
+                                        onPressed: () {
+                                          setState(() {
+                                            components.removeAt(index);
+                                          });
+                                        },
+                                      ),
+                                    )
+                                ],
                               ),
-                              if (components.length > 1)
-                                IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      components.removeAt(index);
-                                    });
-                                  },
-                                )
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Quantity:',
+                                    style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontWeight: FontWeight.w500),
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 130,
+                                    child: TextField(
+                                      controller: comp['controller'] as TextEditingController,
+                                      textAlign: TextAlign.right,
+                                      decoration: InputDecoration(
+                                        suffixText: food != null && food.servingType == 'weight' ? ' g' : (food != null && food.servingType == 'volume' ? ' ml' : ' x'),
+                                        filled: true,
+                                        fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         );
@@ -578,91 +612,125 @@ class DashboardScreen extends ConsumerWidget {
                       itemCount: components.length + 1,
                       itemBuilder: (context, index) {
                         if (index == components.length) {
-                          return TextButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                components.add({'food': null, 'controller': TextEditingController()});
-                              });
-                            },
-                            icon: const Icon(Icons.add, color: Colors.green),
-                            label: const Text('Add Item', style: TextStyle(color: Colors.green)),
+                          return Container(
+                            margin: const EdgeInsets.only(top: 4, bottom: 8),
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  components.add({'food': null, 'controller': TextEditingController()});
+                                });
+                              },
+                              icon: const Icon(Icons.add, color: Colors.green),
+                              label: const Text('Add Another Item', style: TextStyle(color: Colors.green)),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                side: BorderSide(color: Colors.green.withValues(alpha: 0.5), width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
                           );
                         }
                         
                         final comp = components[index];
                         final food = comp['food'] as FoodItem?;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Row(
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          padding: const EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                flex: 2,
-                                child: AppDropdown<FoodItem>(
-                                  value: food,
-                                  label: 'Select Food',
-                                  prefixIcon: Icons.restaurant_outlined,
-                                  items: selectableFoods.map((f) {
-                                    final isMeal = f.category != null && f.category!.startsWith('Meal');
-                                    return AppDropdownItem<FoodItem>(
-                                      value: f,
-                                      label: f.name,
-                                      subtitle: '${f.caloriesPerUnit.toInt()} kcal',
-                                      icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    if (val != null && val.category != null && val.category!.startsWith('Meal')) {
-                                      setState(() {
-                                        baseMealName ??= val.name;
-                                        components.removeAt(index);
-                                        final jsonStr = val.category!.replaceFirst('Meal:', '');
-                                        try {
-                                          final List<dynamic> decoded = jsonDecode(jsonStr);
-                                          int insertIdx = index;
-                                          for (var item in decoded) {
-                                            final subFood = foodItems.firstWhere((f) => f.id == item['id']);
-                                            components.insert(insertIdx, {
-                                              'food': subFood,
-                                              'controller': TextEditingController(text: item['qty'].toString())
-                                            });
-                                            insertIdx++;
-                                          }
-                                        } catch (_) {}
-                                        if (components.isEmpty) {
-                                          components.add({'food': null, 'controller': TextEditingController()});
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: AppDropdown<FoodItem>(
+                                      value: food,
+                                      label: 'Select Food',
+                                      prefixIcon: Icons.restaurant_outlined,
+                                      items: selectableFoods.map((f) {
+                                        final isMeal = f.category != null && f.category!.startsWith('Meal');
+                                        return AppDropdownItem<FoodItem>(
+                                          value: f,
+                                          label: f.name,
+                                          subtitle: '${f.caloriesPerUnit.toInt()} kcal',
+                                          icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null && val.category != null && val.category!.startsWith('Meal')) {
+                                          setState(() {
+                                            baseMealName ??= val.name;
+                                            components.removeAt(index);
+                                            final jsonStr = val.category!.replaceFirst('Meal:', '');
+                                            try {
+                                              final List<dynamic> decoded = jsonDecode(jsonStr);
+                                              int insertIdx = index;
+                                              for (var item in decoded) {
+                                                final subFood = foodItems.firstWhere((f) => f.id == item['id']);
+                                                components.insert(insertIdx, {
+                                                  'food': subFood,
+                                                  'controller': TextEditingController(text: item['qty'].toString())
+                                                });
+                                                insertIdx++;
+                                              }
+                                            } catch (_) {}
+                                            if (components.isEmpty) {
+                                              components.add({'food': null, 'controller': TextEditingController()});
+                                            }
+                                          });
+                                        } else {
+                                          setState(() {
+                                            components[index]['food'] = val;
+                                          });
                                         }
-                                      });
-                                    } else {
-                                      setState(() {
-                                        components[index]['food'] = val;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                flex: 1,
-                                child: TextField(
-                                  controller: comp['controller'] as TextEditingController,
-                                  decoration: InputDecoration(
-                                    labelText: food != null && food.servingType == 'weight' ? '(g)' : (food != null && food.servingType == 'volume' ? '(ml)' : '(x)'),
-                                    filled: true,
-                                    fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                      },
+                                    ),
                                   ),
-                                  keyboardType: TextInputType.number,
-                                ),
+                                  if (components.length > 1)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.redAccent),
+                                        onPressed: () {
+                                          setState(() {
+                                            components.removeAt(index);
+                                          });
+                                        },
+                                      ),
+                                    )
+                                ],
                               ),
-                              if (components.length > 1)
-                                IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      components.removeAt(index);
-                                    });
-                                  },
-                                )
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Quantity:',
+                                    style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontWeight: FontWeight.w500),
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    width: 130,
+                                    child: TextField(
+                                      controller: comp['controller'] as TextEditingController,
+                                      textAlign: TextAlign.right,
+                                      decoration: InputDecoration(
+                                        suffixText: food != null && food.servingType == 'weight' ? ' g' : (food != null && food.servingType == 'volume' ? ' ml' : ' x'),
+                                        filled: true,
+                                        fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         );
