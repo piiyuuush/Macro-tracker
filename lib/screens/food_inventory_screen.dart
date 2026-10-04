@@ -57,7 +57,8 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
         ] : null,
       ),
       body: foodItemsAsyncValue.when(
-        data: (foodItems) {
+        data: (rawFoodItems) {
+          final foodItems = rawFoodItems.where((f) => f.category == null || !f.category!.startsWith('HiddenMeal')).toList();
           if (foodItems.isEmpty) {
             return Center(
               child: Column(
