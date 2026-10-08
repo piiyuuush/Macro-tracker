@@ -34,6 +34,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _fatCtrl = TextEditingController();
   final _fiberCtrl = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _proteinCtrl.addListener(_onMacrosChanged);
+    _carbsCtrl.addListener(_onMacrosChanged);
+    _fatCtrl.addListener(_onMacrosChanged);
+    _calCtrl.addListener(_onCaloriesChanged);
+  }
+
+  bool _isAutoUpdating = false;
+
+  void _onMacrosChanged() {
+    if (_isAutoUpdating) return;
+    _isAutoUpdating = true;
+    double p = double.tryParse(_proteinCtrl.text) ?? 0;
+    double c = double.tryParse(_carbsCtrl.text) ?? 0;
+    double f = double.tryParse(_fatCtrl.text) ?? 0;
+    double cals = (p * 4) + (c * 4) + (f * 9);
+    
+    double currentCals = double.tryParse(_calCtrl.text) ?? 0;
+    if ((cals - currentCals).abs() > 2) {
+      _calCtrl.text = cals.round().toString();
+    }
+    _isAutoUpdating = false;
+  }
+
+  void _onCaloriesChanged() {
+    if (_isAutoUpdating) return;
+    _isAutoUpdating = true;
+    double newCals = double.tryParse(_calCtrl.text) ?? 0;
+    double p = double.tryParse(_proteinCtrl.text) ?? 0;
+    double c = double.tryParse(_carbsCtrl.text) ?? 0;
+    double f = double.tryParse(_fatCtrl.text) ?? 0;
+    
+    double oldCals = (p * 4) + (c * 4) + (f * 9);
+    if (oldCals > 0 && (newCals - oldCals).abs() > 2) {
+       double ratio = newCals / oldCals;
+       _proteinCtrl.text = (p * ratio).round().toString();
+       _carbsCtrl.text = (c * ratio).round().toString();
+       _fatCtrl.text = (f * ratio).round().toString();
+    }
+    _isAutoUpdating = false;
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _ageCtrl.dispose();
+    _heightCtrl.dispose();
+    _weightCtrl.dispose();
+    _goalRateCtrl.dispose();
+    _calCtrl.dispose();
+    _proteinCtrl.dispose();
+    _carbsCtrl.dispose();
+    _fatCtrl.dispose();
+    _fiberCtrl.dispose();
+    super.dispose();
+  }
+
   void _calculateMacros() {
     final age = int.tryParse(_ageCtrl.text) ?? 25;
     final weight = double.tryParse(_weightCtrl.text) ?? 70.0;
@@ -64,17 +123,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // Ensure calories don't drop to dangerously low levels
     if (targetCals < 1200) targetCals = 1200;
 
-    // Standard Macro Split: 30% Protein, 40% Carbs, 30% Fat
-    double protein = (targetCals * 0.3) / 4.0;
-    double carbs = (targetCals * 0.4) / 4.0;
-    double fat = (targetCals * 0.3) / 9.0;
+    // Protein: Adjust based on goal (1.8g to 2.2g per kg)
+    double proteinMultiplier = 1.8;
+    if (_goal == 'Weight Loss') proteinMultiplier = 2.0;
+    if (_goal == 'Recomposition') proteinMultiplier = 2.2;
+    double protein = weight * proteinMultiplier;
+    
+    // Fat: 25% of total calories
+    double fat = (targetCals * 0.25) / 9.0;
+    
+    double proteinCals = protein * 4.0;
+    double fatCals = fat * 9.0;
+    
+    double remainingCals = targetCals - proteinCals - fatCals;
+    
+    // Scale down if protein + fat exceed target calories
+    if (remainingCals < 0) {
+       fat = (targetCals * 0.20) / 9.0;
+       fatCals = fat * 9.0;
+       remainingCals = targetCals - fatCals;
+       if (remainingCals < 0) remainingCals = 0;
+       protein = remainingCals / 4.0;
+       remainingCals = 0;
+    }
+    
+    double carbs = remainingCals / 4.0;
     double fiber = (targetCals / 1000.0) * 14.0;
 
+    _isAutoUpdating = true;
     _calCtrl.text = targetCals.round().toString();
     _proteinCtrl.text = protein.round().toString();
     _carbsCtrl.text = carbs.round().toString();
     _fatCtrl.text = fat.round().toString();
     _fiberCtrl.text = fiber.round().toString();
+    _isAutoUpdating = false;
   }
 
   void _nextStep() {
@@ -313,18 +395,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 subtitle: 'Calorie surplus',
                 icon: Icons.trending_up_rounded,
               ),
+              AppDropdownItem(
+                value: 'Recomposition',
+                label: 'Recomposition',
+                subtitle: 'Convert fat to muscle',
+                icon: Icons.fitness_center_rounded,
+              ),
             ],
             onChanged: (v) {
               setState(() {
                 _goal = v!;
-                if (_goal == 'Maintenance') {
+                if (_goal == 'Maintenance' || _goal == 'Recomposition') {
                   _goalRateCtrl.text = '0.0';
                 }
               });
             },
           ),
           const SizedBox(height: 16),
-          if (_goal != 'Maintenance')
+          if (_goal != 'Maintenance' && _goal != 'Recomposition')
             TextFormField(
               controller: _goalRateCtrl, 
               decoration: _inputDeco('Target Rate (kg/week)'), 

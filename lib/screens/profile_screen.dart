@@ -213,6 +213,59 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
     _proteinCtrl = TextEditingController(text: widget.goals.proteinTarget.toString());
     _carbsCtrl = TextEditingController(text: widget.goals.carbsTarget.toString());
     _fatCtrl = TextEditingController(text: widget.goals.fatTarget.toString());
+
+    _proteinCtrl.addListener(_onMacrosChanged);
+    _carbsCtrl.addListener(_onMacrosChanged);
+    _fatCtrl.addListener(_onMacrosChanged);
+    _calCtrl.addListener(_onCaloriesChanged);
+  }
+
+  bool _isAutoUpdating = false;
+
+  void _onMacrosChanged() {
+    if (_isAutoUpdating) return;
+    _isAutoUpdating = true;
+    double p = double.tryParse(_proteinCtrl.text) ?? 0;
+    double c = double.tryParse(_carbsCtrl.text) ?? 0;
+    double f = double.tryParse(_fatCtrl.text) ?? 0;
+    double cals = (p * 4) + (c * 4) + (f * 9);
+    
+    double currentCals = double.tryParse(_calCtrl.text) ?? 0;
+    if ((cals - currentCals).abs() > 2) {
+      _calCtrl.text = cals.round().toString();
+    }
+    _isAutoUpdating = false;
+  }
+
+  void _onCaloriesChanged() {
+    if (_isAutoUpdating) return;
+    _isAutoUpdating = true;
+    double newCals = double.tryParse(_calCtrl.text) ?? 0;
+    double p = double.tryParse(_proteinCtrl.text) ?? 0;
+    double c = double.tryParse(_carbsCtrl.text) ?? 0;
+    double f = double.tryParse(_fatCtrl.text) ?? 0;
+    
+    double oldCals = (p * 4) + (c * 4) + (f * 9);
+    if (oldCals > 0 && (newCals - oldCals).abs() > 2) {
+       double ratio = newCals / oldCals;
+       _proteinCtrl.text = (p * ratio).round().toString();
+       _carbsCtrl.text = (c * ratio).round().toString();
+       _fatCtrl.text = (f * ratio).round().toString();
+    }
+    _isAutoUpdating = false;
+  }
+
+  @override
+  void dispose() {
+    _weightCtrl.dispose();
+    _heightCtrl.dispose();
+    _ageCtrl.dispose();
+    _goalRateCtrl.dispose();
+    _calCtrl.dispose();
+    _proteinCtrl.dispose();
+    _carbsCtrl.dispose();
+    _fatCtrl.dispose();
+    super.dispose();
   }
 
   void _recalculateMacros() {
@@ -241,16 +294,40 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
 
     if (targetCals < 1200) targetCals = 1200;
 
-    double protein = (targetCals * 0.3) / 4.0;
-    double carbs = (targetCals * 0.4) / 4.0;
-    double fat = (targetCals * 0.3) / 9.0;
+    // Protein: Adjust based on goal (1.8g to 2.2g per kg)
+    double proteinMultiplier = 1.8;
+    if (_goal == 'Weight Loss') proteinMultiplier = 2.0;
+    if (_goal == 'Recomposition') proteinMultiplier = 2.2;
+    double protein = weight * proteinMultiplier;
+    
+    // Fat: 25% of total calories
+    double fat = (targetCals * 0.25) / 9.0;
+    
+    double proteinCals = protein * 4.0;
+    double fatCals = fat * 9.0;
+    
+    double remainingCals = targetCals - proteinCals - fatCals;
+    
+    // Scale down if protein + fat exceed target calories
+    if (remainingCals < 0) {
+       fat = (targetCals * 0.20) / 9.0;
+       fatCals = fat * 9.0;
+       remainingCals = targetCals - fatCals;
+       if (remainingCals < 0) remainingCals = 0;
+       protein = remainingCals / 4.0;
+       remainingCals = 0;
+    }
+    
+    double carbs = remainingCals / 4.0;
 
+    _isAutoUpdating = true;
     setState(() {
       _calCtrl.text = targetCals.round().toString();
       _proteinCtrl.text = protein.round().toString();
       _carbsCtrl.text = carbs.round().toString();
       _fatCtrl.text = fat.round().toString();
     });
+    _isAutoUpdating = false;
   }
 
   void _saveChanges() async {
@@ -392,12 +469,28 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
                           subtitle: 'Surplus',
                           icon: Icons.trending_up_rounded,
                         ),
+                        AppDropdownItem(
+                          value: 'Recomposition',
+                          label: 'Recomposition',
+                          subtitle: 'Convert fat to muscle',
+                          icon: Icons.fitness_center_rounded,
+                        ),
                       ],
-                      onChanged: (v) => setState(() => _goal = v!),
+                      onChanged: (v) {
+                         setState(() {
+                            _goal = v!;
+                            if (_goal == 'Maintenance' || _goal == 'Recomposition') {
+                               _goalRateCtrl.text = '0.0';
+                            }
+                         });
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: TextFormField(controller: _goalRateCtrl, decoration: _inputDeco(context, 'Rate/wk'), keyboardType: TextInputType.number)),
+                  if (_goal != 'Maintenance' && _goal != 'Recomposition')
+                    Expanded(child: TextFormField(controller: _goalRateCtrl, decoration: _inputDeco(context, 'Rate/wk'), keyboardType: TextInputType.number))
+                  else
+                    const Spacer(),
                 ],
               ),
               const SizedBox(height: 12),
