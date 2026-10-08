@@ -10,7 +10,10 @@ import '../providers/database_provider.dart';
 import '../providers/theme_provider.dart';
 import '../database/database.dart';
 import '../utils/backup_service.dart';
+import '../widgets/weight_calendar_view.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -108,6 +111,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 32),
+                    
+                    const WeightTrendsCard(),
 
                     _buildAppearanceSection(context, ref),
                     const SizedBox(height: 32),
@@ -592,6 +597,35 @@ class _EditProfileFormState extends ConsumerState<_EditProfileForm> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class WeightTrendsCard extends ConsumerWidget {
+  const WeightTrendsCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weightLogsAsync = ref.watch(weightLogsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return weightLogsAsync.when(
+      data: (logs) {
+
+        return Card(
+          elevation: 0,
+          margin: const EdgeInsets.only(bottom: 24),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: WeightCalendarView(logs: logs),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
     );
   }
 }

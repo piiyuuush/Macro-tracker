@@ -1,0 +1,18 @@
+{
+  "project_name": "macro_tracker",
+  "primary_stack": ["Flutter", "Dart", "Riverpod", "Drift"],
+  "active_milestone": "Workflow Initialization",
+  "tasks": [
+    {
+      "id": "T001",
+      "title": "Bootstrap Conductor Workflow",
+      "status": "completed"
+    },
+    {
+      "id": "T002",
+      "title": "Audit existing codebase and log technical debt",
+      "status": "open"
+    }
+  ],
+  "agents_in_flight": []
+}

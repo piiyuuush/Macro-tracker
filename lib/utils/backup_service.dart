@@ -69,6 +69,7 @@ class BackupService {
         data['users'] = (await db.select(db.users).get()).map((u) => u.toJson()).toList();
         data['macroGoals'] = (await db.select(db.macroGoals).get()).map((m) => m.toJson()).toList();
         data['foodLogs'] = (await db.select(db.foodLogs).get()).map((l) => l.toJson()).toList();
+        data['weightLogs'] = (await db.select(db.weightLogs).get()).map((wl) => wl.toJson()).toList();
       }
       
       if (type == 'full' || type == 'inventory') {
@@ -163,6 +164,7 @@ class BackupService {
               await db.delete(db.foodLogs).go();
             }
             if (exportType == 'full' || exportType == 'personal') {
+              await db.delete(db.weightLogs).go();
               await db.delete(db.foodLogs).go();
               await db.delete(db.macroGoals).go();
               await db.delete(db.users).go();
@@ -185,6 +187,9 @@ class BackupService {
             }
             if (data['mealItems'] != null) {
               for (var mi in data['mealItems']) await db.into(db.mealItems).insert(MealItem.fromJson(mi));
+            }
+            if (data['weightLogs'] != null) {
+              for (var wl in data['weightLogs']) await db.into(db.weightLogs).insert(WeightLog.fromJson(wl));
             }
           } else if (mode == 'merge') {
             // Merge mode
@@ -248,6 +253,18 @@ class BackupService {
                     createdAt: oldLog.createdAt,
                   ));
                 }
+              }
+            }
+            
+            // 4. Merge Weight Logs
+            if (data['weightLogs'] != null) {
+              for (var wlData in data['weightLogs']) {
+                final oldWl = WeightLog.fromJson(wlData);
+                await db.into(db.weightLogs).insert(WeightLogsCompanion.insert(
+                  weight: oldWl.weight,
+                  loggedDate: oldWl.loggedDate,
+                  createdAt: oldWl.createdAt,
+                ));
               }
             }
           }

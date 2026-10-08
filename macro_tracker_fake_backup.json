@@ -1,0 +1,281 @@
+{
+  "exportType": "full",
+  "users": [
+    {
+      "id": 1,
+      "name": "Jane Doe",
+      "age": 28,
+      "gender": "Female",
+      "height": 165,
+      "currentWeight": 65,
+      "activityLevel": "Moderately Active",
+      "goal": "Lose Weight",
+      "goalRate": 0.5,
+      "createdAt": 1790879400000,
+      "updatedAt": 1790879400000
+    }
+  ],
+  "macroGoals": [
+    {
+      "id": 1,
+      "userId": 1,
+      "caloriesTarget": 1800,
+      "proteinTarget": 135,
+      "carbsTarget": 180,
+      "fatTarget": 60,
+      "fiberTarget": 25,
+      "updatedAt": 1790879400000
+    }
+  ],
+  "foodItems": [
+    {
+      "id": 1,
+      "userId": null,
+      "name": "Chicken Breast (Cooked)",
+      "servingType": "grams",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 1.65,
+      "proteinPerUnit": 0.31,
+      "carbsPerUnit": 0,
+      "fatPerUnit": 0.036,
+      "fiberPerUnit": 0,
+      "category": "meat",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 2,
+      "userId": null,
+      "name": "White Rice (Cooked)",
+      "servingType": "grams",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 1.3,
+      "proteinPerUnit": 0.027,
+      "carbsPerUnit": 0.28,
+      "fatPerUnit": 0.003,
+      "fiberPerUnit": 0.004,
+      "category": "grains",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 3,
+      "userId": null,
+      "name": "Broccoli (Steamed)",
+      "servingType": "grams",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 0.35,
+      "proteinPerUnit": 0.024,
+      "carbsPerUnit": 0.07,
+      "fatPerUnit": 0.004,
+      "fiberPerUnit": 0.033,
+      "category": "vegetables",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 4,
+      "userId": null,
+      "name": "Olive Oil",
+      "servingType": "ml",
+      "measurementUnit": "ml",
+      "caloriesPerUnit": 8.84,
+      "proteinPerUnit": 0,
+      "carbsPerUnit": 0,
+      "fatPerUnit": 1,
+      "fiberPerUnit": 0,
+      "category": "fats",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 5,
+      "userId": null,
+      "name": "Whey Protein Isolate",
+      "servingType": "scoop",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 3.75,
+      "proteinPerUnit": 0.85,
+      "carbsPerUnit": 0.03,
+      "fatPerUnit": 0.01,
+      "fiberPerUnit": 0,
+      "category": "supplements",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 6,
+      "userId": null,
+      "name": "Oatmeal",
+      "servingType": "grams",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 3.89,
+      "proteinPerUnit": 0.169,
+      "carbsPerUnit": 0.663,
+      "fatPerUnit": 0.069,
+      "fiberPerUnit": 0.106,
+      "category": "grains",
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 7,
+      "userId": null,
+      "name": "Banana",
+      "servingType": "pieces",
+      "measurementUnit": "g",
+      "caloriesPerUnit": 0.89,
+      "proteinPerUnit": 0.011,
+      "carbsPerUnit": 0.228,
+      "fatPerUnit": 0.003,
+      "fiberPerUnit": 0.026,
+      "category": "fruits",
+      "createdAt": 1790879400000
+    }
+  ],
+  "foodLogs": [
+    {
+      "id": 1,
+      "userId": 1,
+      "foodItemId": 6,
+      "quantity": 50,
+      "loggedDate": 1791311400000,
+      "loggedTime": 1791340200000,
+      "calories": 194.5,
+      "protein": 8.45,
+      "carbs": 33.15,
+      "fat": 3.45,
+      "fiber": 5.3,
+      "createdAt": 1791311400000
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "foodItemId": 5,
+      "quantity": 30,
+      "loggedDate": 1791311400000,
+      "loggedTime": 1791341100000,
+      "calories": 112.5,
+      "protein": 25.5,
+      "carbs": 0.9,
+      "fat": 0.3,
+      "fiber": 0,
+      "createdAt": 1791311400000
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "foodItemId": 1,
+      "quantity": 200,
+      "loggedDate": 1791311400000,
+      "loggedTime": 1791360000000,
+      "calories": 330,
+      "protein": 62,
+      "carbs": 0,
+      "fat": 7.2,
+      "fiber": 0,
+      "createdAt": 1791311400000
+    },
+    {
+      "id": 4,
+      "userId": 1,
+      "foodItemId": 2,
+      "quantity": 150,
+      "loggedDate": 1791311400000,
+      "loggedTime": 1791360000000,
+      "calories": 195,
+      "protein": 4.05,
+      "carbs": 42,
+      "fat": 0.45,
+      "fiber": 0.6,
+      "createdAt": 1791311400000
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "foodItemId": 1,
+      "quantity": 150,
+      "loggedDate": 1791397800000,
+      "loggedTime": 1791441000000,
+      "calories": 247.5,
+      "protein": 46.5,
+      "carbs": 0,
+      "fat": 5.4,
+      "fiber": 0,
+      "createdAt": 1791397800000
+    },
+    {
+      "id": 6,
+      "userId": 1,
+      "foodItemId": 3,
+      "quantity": 100,
+      "loggedDate": 1791397800000,
+      "loggedTime": 1791441000000,
+      "calories": 35,
+      "protein": 2.4,
+      "carbs": 7,
+      "fat": 0.4,
+      "fiber": 3.3,
+      "createdAt": 1791397800000
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "foodItemId": 4,
+      "quantity": 15,
+      "loggedDate": 1791397800000,
+      "loggedTime": 1791441000000,
+      "calories": 132.6,
+      "protein": 0,
+      "carbs": 0,
+      "fat": 15,
+      "fiber": 0,
+      "createdAt": 1791397800000
+    }
+  ],
+  "weightLogs": [
+    {
+      "id": 1,
+      "userId": 1,
+      "weight": 66.2,
+      "loggedDate": 1790879400000,
+      "createdAt": 1790879400000
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "weight": 66,
+      "loggedDate": 1790965800000,
+      "createdAt": 1790965800000
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "weight": 65.8,
+      "loggedDate": 1791052200000,
+      "createdAt": 1791052200000
+    },
+    {
+      "id": 4,
+      "userId": 1,
+      "weight": 65.5,
+      "loggedDate": 1791138600000,
+      "createdAt": 1791138600000
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "weight": 65.3,
+      "loggedDate": 1791225000000,
+      "createdAt": 1791225000000
+    },
+    {
+      "id": 6,
+      "userId": 1,
+      "weight": 65.1,
+      "loggedDate": 1791311400000,
+      "createdAt": 1791311400000
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "weight": 65,
+      "loggedDate": 1791397800000,
+      "createdAt": 1791397800000
+    }
+  ]
+}

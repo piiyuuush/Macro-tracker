@@ -49,6 +49,11 @@ final macroGoalsProvider = StreamProvider<MacroGoal?>((ref) {
   return (db.select(db.macroGoals)..limit(1)).watchSingleOrNull();
 });
 
+final weightLogsProvider = StreamProvider<List<WeightLog>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.weightLogs)..orderBy([(t) => OrderingTerm.desc(t.loggedDate)])).watch();
+});
+
 final currentWeekLogsProvider = StreamProvider<List<FoodLog>>((ref) {
   final db = ref.watch(databaseProvider);
   final now = DateTime.now();

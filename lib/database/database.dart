@@ -74,12 +74,55 @@ class MealItems extends Table {
   IntColumn get foodItemId => integer().references(FoodItems, #id)();
 }
 
-@DriftDatabase(tables: [Users, MacroGoals, FoodItems, FoodLogs, Meals, MealItems])
+class WeightLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get userId => integer().references(Users, #id).nullable()();
+  RealColumn get weight => real()();
+  DateTimeColumn get loggedDate => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Users, MacroGoals, FoodItems, FoodLogs, Meals, MealItems, WeightLogs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          try {
+            await m.addColumn(foodItems, foodItems.servingType);
+          } catch (e) {
+            // Column might already exist
+          }
+          try {
+            await m.createTable(meals);
+          } catch (e) {
+            // Table might already exist
+          }
+          try {
+            await m.createTable(mealItems);
+          } catch (e) {
+            // Table might already exist
+          }
+        }
+        if (from < 3) {
+          try {
+            await m.createTable(weightLogs);
+          } catch (e) {
+            // Table might already exist
+          }
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {

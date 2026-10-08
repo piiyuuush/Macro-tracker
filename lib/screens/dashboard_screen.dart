@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../widgets/food_search_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import 'dart:convert';
@@ -9,6 +10,8 @@ import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
 import '../widgets/app_dropdown.dart';
+import '../widgets/app_selector.dart';
+import '../widgets/weight_logger_sheet.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -56,6 +59,7 @@ class DashboardScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildWeekBar(context, ref, goals),
+                          _buildWeightTrackerCard(context, ref),
                           Card(
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
@@ -346,44 +350,38 @@ class DashboardScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
-                                    child: AppDropdown<FoodItem>(
-                                      value: food,
+                                    child: AppSelector(
+                                      valueText: food?.name,
                                       label: 'Select Food',
                                       prefixIcon: Icons.restaurant_outlined,
-                                      items: selectableFoods.map((f) {
-                                        final isMeal = f.category != null && f.category!.startsWith('Meal');
-                                        return AppDropdownItem<FoodItem>(
-                                          value: f,
-                                          label: f.name,
-                                          subtitle: '${f.caloriesPerUnit.toInt()} kcal',
-                                          icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        if (val != null && val.category != null && val.category!.startsWith('Meal')) {
-                                          setState(() {
-                                            components.removeAt(index);
-                                            final jsonStr = val.category!.replaceFirst('Meal:', '');
-                                            try {
-                                              final List<dynamic> decoded = jsonDecode(jsonStr);
-                                              int insertIdx = index;
-                                              for (var item in decoded) {
-                                                final subFood = foodItems.firstWhere((f) => f.id == item['id']);
-                                                components.insert(insertIdx, {
-                                                  'food': subFood,
-                                                  'controller': TextEditingController(text: item['qty'].toString())
-                                                });
-                                                insertIdx++;
+                                      onTap: () async {
+                                        final val = await showFoodSearchSelector(context, ref, selectableFoods);
+                                        if (val != null) {
+                                          if (val.category != null && val.category!.startsWith('Meal')) {
+                                            setState(() {
+                                              components.removeAt(index);
+                                              final jsonStr = val.category!.replaceFirst('Meal:', '');
+                                              try {
+                                                final List<dynamic> decoded = jsonDecode(jsonStr);
+                                                int insertIdx = index;
+                                                for (var item in decoded) {
+                                                  final subFood = foodItems.firstWhere((f) => f.id == item['id']);
+                                                  components.insert(insertIdx, {
+                                                    'food': subFood,
+                                                    'controller': TextEditingController(text: item['qty'].toString())
+                                                  });
+                                                  insertIdx++;
+                                                }
+                                              } catch (_) {}
+                                              if (components.isEmpty) {
+                                                components.add({'food': null, 'controller': TextEditingController()});
                                               }
-                                            } catch (_) {}
-                                            if (components.isEmpty) {
-                                              components.add({'food': null, 'controller': TextEditingController()});
-                                            }
-                                          });
-                                        } else {
-                                          setState(() {
-                                            components[index]['food'] = val;
-                                          });
+                                            });
+                                          } else {
+                                            setState(() {
+                                              components[index]['food'] = val;
+                                            });
+                                          }
                                         }
                                       },
                                     ),
@@ -415,12 +413,21 @@ class DashboardScreen extends ConsumerWidget {
                                     child: TextField(
                                       controller: comp['controller'] as TextEditingController,
                                       textAlign: TextAlign.right,
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
                                       decoration: InputDecoration(
                                         suffixText: food != null && food.servingType == 'weight' ? ' g' : (food != null && food.servingType == 'volume' ? ' ml' : ' x'),
                                         filled: true,
                                         fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          borderSide: BorderSide(color: isDark ? Colors.green.shade400 : Colors.green.shade700, width: 1.6),
+                                        ),
                                       ),
                                       keyboardType: TextInputType.number,
                                     ),
@@ -649,45 +656,39 @@ class DashboardScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
-                                    child: AppDropdown<FoodItem>(
-                                      value: food,
+                                    child: AppSelector(
+                                      valueText: food?.name,
                                       label: 'Select Food',
                                       prefixIcon: Icons.restaurant_outlined,
-                                      items: selectableFoods.map((f) {
-                                        final isMeal = f.category != null && f.category!.startsWith('Meal');
-                                        return AppDropdownItem<FoodItem>(
-                                          value: f,
-                                          label: f.name,
-                                          subtitle: '${f.caloriesPerUnit.toInt()} kcal',
-                                          icon: isMeal ? Icons.restaurant_rounded : Icons.fastfood_rounded,
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        if (val != null && val.category != null && val.category!.startsWith('Meal')) {
-                                          setState(() {
-                                            baseMealName ??= val.name;
-                                            components.removeAt(index);
-                                            final jsonStr = val.category!.replaceFirst('Meal:', '');
-                                            try {
-                                              final List<dynamic> decoded = jsonDecode(jsonStr);
-                                              int insertIdx = index;
-                                              for (var item in decoded) {
-                                                final subFood = foodItems.firstWhere((f) => f.id == item['id']);
-                                                components.insert(insertIdx, {
-                                                  'food': subFood,
-                                                  'controller': TextEditingController(text: item['qty'].toString())
-                                                });
-                                                insertIdx++;
+                                      onTap: () async {
+                                        final val = await showFoodSearchSelector(context, ref, selectableFoods);
+                                        if (val != null) {
+                                          if (val.category != null && val.category!.startsWith('Meal')) {
+                                            setState(() {
+                                              baseMealName ??= val.name;
+                                              components.removeAt(index);
+                                              final jsonStr = val.category!.replaceFirst('Meal:', '');
+                                              try {
+                                                final List<dynamic> decoded = jsonDecode(jsonStr);
+                                                int insertIdx = index;
+                                                for (var item in decoded) {
+                                                  final subFood = foodItems.firstWhere((f) => f.id == item['id']);
+                                                  components.insert(insertIdx, {
+                                                    'food': subFood,
+                                                    'controller': TextEditingController(text: item['qty'].toString())
+                                                  });
+                                                  insertIdx++;
+                                                }
+                                              } catch (_) {}
+                                              if (components.isEmpty) {
+                                                components.add({'food': null, 'controller': TextEditingController()});
                                               }
-                                            } catch (_) {}
-                                            if (components.isEmpty) {
-                                              components.add({'food': null, 'controller': TextEditingController()});
-                                            }
-                                          });
-                                        } else {
-                                          setState(() {
-                                            components[index]['food'] = val;
-                                          });
+                                            });
+                                          } else {
+                                            setState(() {
+                                              components[index]['food'] = val;
+                                            });
+                                          }
                                         }
                                       },
                                     ),
@@ -719,12 +720,21 @@ class DashboardScreen extends ConsumerWidget {
                                     child: TextField(
                                       controller: comp['controller'] as TextEditingController,
                                       textAlign: TextAlign.right,
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87),
                                       decoration: InputDecoration(
                                         suffixText: food != null && food.servingType == 'weight' ? ' g' : (food != null && food.servingType == 'volume' ? ' ml' : ' x'),
                                         filled: true,
                                         fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          borderSide: BorderSide(color: isDark ? Colors.green.shade400 : Colors.green.shade700, width: 1.6),
+                                        ),
                                       ),
                                       keyboardType: TextInputType.number,
                                     ),
@@ -974,6 +984,66 @@ class DashboardScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         Text('${current.toInt()}g', style: const TextStyle(fontSize: 12)),
       ],
+    );
+  }
+
+  Widget _buildWeightTrackerCard(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final weightLogsAsync = ref.watch(weightLogsProvider);
+
+    return weightLogsAsync.when(
+      data: (logs) {
+        final now = DateTime.now();
+        final latestLog = logs.firstOrNull;
+        final isLoggedToday = latestLog != null &&
+            latestLog.loggedDate.year == now.year &&
+            latestLog.loggedDate.day == now.day;
+
+        return Card(
+          elevation: 0,
+          margin: const EdgeInsets.only(bottom: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        latestLog != null ? 'Current Weight' : 'Weight Tracker',
+                        style: TextStyle(
+                            fontSize: 14, color: isDark ? Colors.white70 : Colors.grey.shade700),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        latestLog != null ? '${latestLog.weight.toStringAsFixed(1)} kg' : 'Not Logged',
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => showWeightLoggerSheet(context, ref),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isLoggedToday ? (isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade200) : Colors.green,
+                    foregroundColor: isLoggedToday ? (isDark ? Colors.white : Colors.black87) : Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  child: Text(isLoggedToday ? 'Update' : 'Log Today'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }
