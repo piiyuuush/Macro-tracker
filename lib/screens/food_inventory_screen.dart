@@ -450,8 +450,11 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
     
     String servingType = 'Weight (e.g. 100g)';
     if (foodToEdit != null) {
-      if (foodToEdit.servingType == 'count') servingType = 'Count (e.g. 1x)';
-      else if (foodToEdit.servingType == 'volume') servingType = 'Volume (e.g. 100ml)';
+      if (foodToEdit.servingType == 'count') {
+        servingType = 'Count (e.g. 1x)';
+      } else if (foodToEdit.servingType == 'volume') {
+        servingType = 'Volume (e.g. 100ml)';
+      }
     }
 
     pasteController.addListener(() {

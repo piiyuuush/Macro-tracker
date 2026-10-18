@@ -9,7 +9,6 @@ import 'package:fl_chart/fl_chart.dart';
 import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
-import '../widgets/app_dropdown.dart';
 import '../widgets/app_selector.dart';
 import '../widgets/weight_logger_sheet.dart';
 

@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/notifications_settings_modal.dart';
 import '../widgets/app_dropdown.dart';
-import 'package:drift/drift.dart' as drift;
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
-import '../providers/theme_provider.dart';
 import '../database/database.dart';
-import '../utils/backup_service.dart';
 import '../widgets/weight_calendar_view.dart';
-import 'package:drift/drift.dart' as drift;
-import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {

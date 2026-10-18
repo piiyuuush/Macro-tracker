@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
-import '../utils/llm_parser.dart';
 import '../widgets/app_dropdown.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {

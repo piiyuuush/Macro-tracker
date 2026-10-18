@@ -1,3 +1,5 @@
+import 'dart:io';
+
 void main() {
   List<Map<String, dynamic>> cases = [
     {"weight": 70.0, "tdee": 2200.0, "goal": "Maintenance", "adj": 0.0},
@@ -34,6 +36,6 @@ void main() {
     
     double carbs = remainingCals / 4.0;
     
-    print("Goal: ${c['goal']} | Weight: ${weight}kg | Cals: $targetCals | P: ${protein.round()}g (${(protein*4/targetCals*100).round()}%) | F: ${fat.round()}g (${(fat*9/targetCals*100).round()}%) | C: ${carbs.round()}g (${(carbs*4/targetCals*100).round()}%)");
+    stdout.writeln("Goal: ${c['goal']} | Weight: ${weight}kg | Cals: $targetCals | P: ${protein.round()}g (${(protein*4/targetCals*100).round()}%) | F: ${fat.round()}g (${(fat*9/targetCals*100).round()}%) | C: ${carbs.round()}g (${(carbs*4/targetCals*100).round()}%)");
   }
 }

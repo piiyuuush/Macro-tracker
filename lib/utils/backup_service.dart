@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import '../providers/data_providers.dart';
 import '../providers/database_provider.dart';
 import '../database/database.dart';
 import 'package:drift/drift.dart' as drift;
@@ -129,6 +127,7 @@ class BackupService {
         String mode = 'overwrite';
 
         if (hasData) {
+          if (!context.mounted) return;
           final chosen = await showDialog<String>(
             context: context,
             barrierDismissible: false,
@@ -171,25 +170,39 @@ class BackupService {
             }
             
             if (data['users'] != null) {
-              for (var u in data['users']) await db.into(db.users).insert(User.fromJson(u));
+              for (var u in data['users']) {
+                await db.into(db.users).insert(User.fromJson(u));
+              }
             }
             if (data['macroGoals'] != null) {
-              for (var m in data['macroGoals']) await db.into(db.macroGoals).insert(MacroGoal.fromJson(m));
+              for (var m in data['macroGoals']) {
+                await db.into(db.macroGoals).insert(MacroGoal.fromJson(m));
+              }
             }
             if (data['foodItems'] != null) {
-              for (var f in data['foodItems']) await db.into(db.foodItems).insert(FoodItem.fromJson(f));
+              for (var f in data['foodItems']) {
+                await db.into(db.foodItems).insert(FoodItem.fromJson(f));
+              }
             }
             if (data['foodLogs'] != null) {
-              for (var l in data['foodLogs']) await db.into(db.foodLogs).insert(FoodLog.fromJson(l));
+              for (var l in data['foodLogs']) {
+                await db.into(db.foodLogs).insert(FoodLog.fromJson(l));
+              }
             }
             if (data['meals'] != null) {
-              for (var m in data['meals']) await db.into(db.meals).insert(Meal.fromJson(m));
+              for (var m in data['meals']) {
+                await db.into(db.meals).insert(Meal.fromJson(m));
+              }
             }
             if (data['mealItems'] != null) {
-              for (var mi in data['mealItems']) await db.into(db.mealItems).insert(MealItem.fromJson(mi));
+              for (var mi in data['mealItems']) {
+                await db.into(db.mealItems).insert(MealItem.fromJson(mi));
+              }
             }
             if (data['weightLogs'] != null) {
-              for (var wl in data['weightLogs']) await db.into(db.weightLogs).insert(WeightLog.fromJson(wl));
+              for (var wl in data['weightLogs']) {
+                await db.into(db.weightLogs).insert(WeightLog.fromJson(wl));
+              }
             }
           } else if (mode == 'merge') {
             // Merge mode
@@ -227,7 +240,8 @@ class BackupService {
             // 2. Merge Meals and MealItems
             if (data['meals'] != null) {
               for (var mData in data['meals']) {
-                final oldMeal = Meal.fromJson(mData);
+                // Validate meal JSON structure
+                Meal.fromJson(mData);
                 // We just insert meals as new, but remap their ID. We don't bother deduplicating complex meals to be safe.
                 // Or wait, meal logic might be simpler since meals aren't used right now in logs natively (we use category hack).
                 // Just insert it as new.

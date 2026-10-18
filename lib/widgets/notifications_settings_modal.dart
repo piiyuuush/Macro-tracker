@@ -29,7 +29,9 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
         final List<dynamic> decoded = jsonDecode(timesStr);
         _times = decoded.map((e) => TimeOfDay(hour: e['h'], minute: e['m'])).toList();
         _countController.text = _times.length.toString();
-      } catch (e) {}
+      } catch (_) {
+        // Ignore malformed stored JSON
+      }
     }
     setState(() {
       _isLoading = false;
@@ -68,7 +70,7 @@ class _NotificationsSettingsModalState extends State<NotificationsSettingsModal>
     // In a full implementation, flutter_local_notifications would be used
     // to schedule a daily alarm for each TimeOfDay in _times, 
     // picking a random message from the list for the notification body!
-    print("Scheduling ${messages[random.nextInt(messages.length)]} for $_times");
+    debugPrint("Scheduling ${messages[random.nextInt(messages.length)]} for $_times");
   }
 
   void _updateCount(String val) {
