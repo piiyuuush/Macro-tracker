@@ -30,7 +30,8 @@ final todayLogsProvider = StreamProvider<List<FoodLog>>((ref) {
   
   return (db.select(db.foodLogs)
         ..where((t) => t.loggedDate.isBiggerOrEqualValue(todayStart) & 
-                       t.loggedDate.isSmallerThanValue(todayEnd)))
+                       t.loggedDate.isSmallerThanValue(todayEnd))
+        ..orderBy([(t) => OrderingTerm.desc(t.loggedTime), (t) => OrderingTerm.desc(t.id)]))
       .watch();
 });
 

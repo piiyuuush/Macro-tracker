@@ -166,7 +166,7 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                               Text(food.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
                               Text(
-                                '${food.caloriesPerUnit.toInt()} kcal · ${food.proteinPerUnit.toInt()}g Protein',
+                                '${food.caloriesPerUnit.toInt()} kcal · P: ${food.proteinPerUnit.toInt()}g · C: ${food.carbsPerUnit.toInt()}g · F: ${food.fatPerUnit.toInt()}g',
                                 style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontSize: 13),
                               ),
                               const SizedBox(height: 2),
@@ -292,10 +292,42 @@ class _FoodInventoryScreenState extends ConsumerState<FoodInventoryScreen> {
                         controller: groupNameController,
                         decoration: InputDecoration(
                           labelText: 'Meal Name',
+                          hintText: 'e.g., Breakfast, College meal',
+                          prefixIcon: const Icon(Icons.restaurant_menu_rounded, color: Colors.green),
                           filled: true,
                           fillColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1A1A1A) : Colors.grey.shade100,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            'Breakfast',
+                            'College meal',
+                            'Meal at office',
+                            'Lunch',
+                            'Dinner',
+                            'Snack',
+                            'Pre-Workout',
+                            'Post-Workout',
+                          ].map((suggested) => Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: ActionChip(
+                              label: Text(suggested, style: const TextStyle(fontSize: 12)),
+                              backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade100,
+                              side: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey.shade300),
+                              padding: EdgeInsets.zero,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              onPressed: () {
+                                setModalState(() {
+                                  groupNameController.text = suggested;
+                                });
+                              },
+                            ),
+                          )).toList(),
                         ),
                       ),
                       const SizedBox(height: 16),

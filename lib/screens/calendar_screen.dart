@@ -1,10 +1,12 @@
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../providers/data_providers.dart';
 import '../database/database.dart';
+import '../widgets/food_log_card.dart';
 
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
@@ -91,8 +93,13 @@ class CalendarScreen extends ConsumerWidget {
                   Expanded(
                     child: foodItemsAsync.when(
                       data: (foodItems) {
-                        // Filter logs for the selected date
-                        final dailyLogs = allLogs.where((log) => isSameDay(log.loggedDate, selectedDate)).toList();
+                        // Filter logs for the selected date and sort descending (recent on top)
+                        final dailyLogs = allLogs.where((log) => isSameDay(log.loggedDate, selectedDate)).toList()
+                          ..sort((a, b) {
+                            final cmp = b.loggedTime.compareTo(a.loggedTime);
+                            if (cmp != 0) return cmp;
+                            return b.id.compareTo(a.id);
+                          });
                         
                         return Container(
                           width: double.infinity,
@@ -118,41 +125,11 @@ class CalendarScreen extends ConsumerWidget {
                                       final food = foodItems.cast<FoodItem?>().firstWhere((f) => f?.id == log.foodItemId, orElse: () => null);
                                       if (food == null) return const SizedBox();
 
-                                      return Card(
-                                        elevation: 0,
-                                        margin: const EdgeInsets.only(bottom: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade300)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.all(12),
-                                                decoration: BoxDecoration(color: isDark ? Colors.green.withValues(alpha: 0.15) : Colors.green.shade50, borderRadius: BorderRadius.circular(12)),
-                                                child: Icon(food.category != null && food.category!.startsWith('Meal') ? Icons.restaurant : Icons.fastfood, color: isDark ? Colors.green.shade400 : Colors.green.shade700, size: 24),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(food.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      '${log.calories.toInt()} kcal · ${log.protein.toInt()}g Protein',
-                                                      style: TextStyle(color: isDark ? Colors.white70 : Colors.grey.shade700, fontSize: 13),
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      '${log.quantity.toInt()} ${food.servingType == 'weight' ? 'g' : (food.servingType == 'volume' ? 'ml' : 'x')} logged at ${log.loggedTime.hour}:${log.loggedTime.minute.toString().padLeft(2, '0')}',
-                                                      style: TextStyle(color: isDark ? Colors.green.shade400 : Colors.green.shade600, fontSize: 12, fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      return FoodLogCard(
+                                        key: ValueKey(log.id),
+                                        log: log,
+                                        food: food,
+                                        foodItems: foodItems,
                                       );
                                     },
                                   ),
